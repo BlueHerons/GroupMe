@@ -54,8 +54,9 @@ if (preg_match("/^\//", $command)) {
 	}
 	else if (preg_match("/^\/roll ([0-9])[Dd](100|%|[0-9]{1,2})/", $command, $matches)) {
 		$message = print_r($matches, true);
-    // makes d00 = d100, adds d% as an alias
-    if($matches[2] == "00" || $matches[2] == "%") $matches[2] = 100;
+		// makes d00 = d100, adds d% as an alias
+		if($matches[2] == "00" || $matches[2] == "%")
+			$matches[2] = 100;
 		$result = "";
 		for ($i = 0; $i < $matches[1]; $i++) {
 			$result .= rand(1, $matches[2]) . " ";
