@@ -25,7 +25,7 @@ class PartyBusBot {
 			else if (preg_match("/^\/rules\s?([A-Za-z\s]+)?$/", $command, $matches)) {
 				$this->rules($matches[1]);
 			}
-			else if (preg_match("/^\/roll\s?(([0-9]+)([Dd])(%|100|[0-9]{1,2}))?$/", $command, $matches)) {
+			else if (preg_match("/^\/roll\s?(([0-9]+)([Dd])([Ff]|%|100|[0-9]{1,2}))?$/", $command, $matches)) {
 				array_shift($matches);
 				array_shift($matches);
 				$this->roll($matches);
@@ -94,6 +94,19 @@ class PartyBusBot {
 			$this->sendMessage("ack");
 		}
 		else {
+							
+			// fudge dice
+			if($args[2] == "F" || $args[2] == "f") {
+				for ($i = 0; $i < $args[0]; $i++) {
+					// three states: -, 0, or +
+					switch (rand(1, 3) - 2) {
+						case 1: $message .= "+ "; break;
+						case -1: $message .= "- "; break;
+						default: $message .= "0 ";
+					}
+				}
+				return;
+			}
 			// makes d00 = d100, adds d% as an alias
 			if($args[2] == "00" || $args[2] == "%")
 				$args[2] = 100;
