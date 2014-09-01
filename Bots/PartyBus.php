@@ -31,6 +31,7 @@ class PartyBusBot {
 				$this->roll($matches);
 
 			}
+			else if (preg_match("/^\/flip/", $command)) $this->roll("coin");
 		}
 	}
 
@@ -113,6 +114,8 @@ class PartyBusBot {
 			for ($i = 0; $i < $args[0]; $i++) {
 				$message .= rand(1, $args[2]) . " ";
 			}
+			// coin flip
+			if($args[0] == "coin") $message = rand(0,1) ? "heads" : "tails";
 		}
 
 		$this->sendMessage($message);
