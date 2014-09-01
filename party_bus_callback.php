@@ -52,7 +52,7 @@ if (preg_match("/^\//", $command)) {
 			sendMessage($message, GROUPME_BOT_TOKEN);
 		}
 	}
-	else if (preg_match("/^\/roll ([0-9])[Dd]([0-9]{1,2}|100|%)/", $command, $matches)) {
+	else if (preg_match("/^\/roll ([0-9])[Dd](100|%|[0-9]{1,2})/", $command, $matches)) {
 		$message = print_r($matches, true);
     // makes d00 = d100, adds d% as an alias
     if($matches[2] == "00" || $matches[2] == "%") $matches[2] = 100;
