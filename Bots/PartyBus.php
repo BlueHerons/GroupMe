@@ -32,7 +32,6 @@ class PartyBusBot {
 		$message = "I'm the Party Bus bot. Here are the commands I understand:\n".
 			   "  /mods      List the moderators of this chat\n".
 		           "  /rules     List the rules of the Bus\n".
-			   "  /roll xDy  Rolls x dice with y faces\n".
 			   "  /help      Show a list of commands\n".
 			   "\n".
 			   "John (CaptCynicism) is my owner. Contact him if I malfunction";
