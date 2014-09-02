@@ -25,12 +25,6 @@ class PartyBusBot {
 			else if (preg_match("/^\/rules\s?([A-Za-z\s]+)?$/", $command, $matches)) {
 				$this->rules($matches[1]);
 			}
-			else if (preg_match("/^\/roll\s?(([0-9]+)([Dd])(%|100|[0-9]{1,2}))?$/", $command, $matches)) {
-				array_shift($matches);
-				array_shift($matches);
-				$this->roll($matches);
-
-			}
 		}
 	}
 
