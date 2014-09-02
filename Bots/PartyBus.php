@@ -2,7 +2,7 @@
 namespace BlueHerons\GroupMe\Bots;
 
 define("GROUPME_BOT_URL", "https://api.groupme.com/v3/bots/post");
-define("GROUPME_BOT_TOKEN", "fc9f98681f07c214d3f49590de");
+define("GROUPME_BOT_TOKEN", "");
 
 require("../vendor/autoload.php");
 
