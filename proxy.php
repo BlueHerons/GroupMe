@@ -38,7 +38,7 @@ if (isset($_REQUEST['bot_id']) && array_key_exists($_REQUEST['bot_id'], $map)) {
             logMsg("\"" . $json->text . "\" matches pattern: " . $condition);
             foreach ($bot_id as $bot) {
                 logMsg("Sending message via bot: " . $bot);
-                sendMessage($json->text, $bot);
+                sendMessage(sprintf("%s: %s", $json->name, $json->text), $bot);
             }
         }
     }
