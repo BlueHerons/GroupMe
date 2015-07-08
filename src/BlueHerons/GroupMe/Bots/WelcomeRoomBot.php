@@ -20,23 +20,23 @@ class WelcomeRoomBot extends EventBot {
     }
 
     public function onGroupChanged($data) {
-        $this->sendMessage(sprintf("The groups %s was changed to \"%s\" by @%s.", $data['change'], $data['what'], $data['who']));
+        //$this->sendMessage(sprintf("The groups %s was changed to \"%s\" by @%s.", $data['change'], $data['what'], $data['who']));
     }
 
     public function onMemberAdded($data) {
-        $this->sendMessage(sprintf("Welcome, %s!", $data['addee']));
+        $this->sendMessage(sprintf("Thanks, %s.\n\nWelcome, %s! Please let us know your agent name and where you play.\n\nThe purpose of this group is to get you connected with other local players in your area.", $data['by'], $data['who']));
     }
 
     public function onMemberRemoved($data) {
-        $this->sendMessage(sprintf("Goodbye %s!", $data['removee']));
+        //$this->sendMessage(sprintf("Goodbye %s!", $data['removee']));
     }
 
     public function onMemberJoined($data) {
-        $this->sendMessage(sprintf("Welcome, %s!", $data['who']));
+        $this->sendMessage(sprintf("Welcome, %s! Please let us know your agent name and where you play.\n\nThe purpose of this group is to get you connected with other local players in your area.", $data['who']));
     }
 
     public function onMemberLeft($data) {
-        $this->sendMessage(sprintf("Goodbye %s!", $data['who']));
+        //$this->sendMessage(sprintf("Goodbye %s!", $data['who']));
     }
 
     public function onMemberRejoined($data) {
@@ -44,23 +44,23 @@ class WelcomeRoomBot extends EventBot {
     }
     
     public function onMemberNameChange($data) {
-        $this->sendMessage(sprintf("I've recorded %s's name change to %s", $data['who'], $data['what']));
+        //$this->sendMessage(sprintf("I've recorded %s's name change to %s", $data['who'], $data['what']));
     }
 
     public function onOfficeModeChanged($data) {
-        $this->sendMessage(sprintf("Room notifications have been %s", $data['what']));
+        //$this->sendMessage(sprintf("Room notifications have been %s", $data['what']));
     }
 
     public function onEventRSVP($data) {
-        $this->sendMessage(sprintf("%s RSVP'd \"%s\" to \"%s\"", $data['who'], $data['rsvp'], $data['what']));
+        //$this->sendMessage(sprintf("%s RSVP'd \"%s\" to \"%s\"", $data['who'], $data['rsvp'], $data['what']));
     }
 
     public function onEventChanged($data) {
-        $this->sendMessage(sprintf("%s changed the %s for the event \"%s\"", $data['who'], $data['change'], $data['what']));
+        //$this->sendMessage(sprintf("%s changed the %s for the event \"%s\"", $data['who'], $data['change'], $data['what']));
     }
 
     public function onEventCanceled($data) {
-        $this->sendMessage(sprintf("%s canceled \"%s\"", $data['who'], $data['what']));
+        //$this->sendMessage(sprintf("%s canceled \"%s\"", $data['who'], $data['what']));
     }
 }
 ?>
