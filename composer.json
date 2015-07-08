@@ -1,2 +1,10 @@
 {
+    "autoload": {
+        "psr-4": {
+            "BlueHerons\\GroupMe\\": "src/BlueHerons/GroupMe"
+        }
+    },
+    "require": {
+	"php-curl-class/php-curl-class": "~2.1"
+    }
 }

@@ -2,7 +2,7 @@
 namespace BlueHerons\GroupMe\Bots;
 
 define("GROUPME_BOT_URL", "https://api.groupme.com/v3/bots/post");
-define("GROUPME_BOT_TOKEN", "");
+define("GROUPME_BOT_TOKEN", "caa5c53bb65891bfa66a0a1ddd");
 
 require("../vendor/autoload.php");
 
@@ -41,12 +41,13 @@ class PartyBusBot {
 	public function mods() {
 		$message = "The moderators of this group are: \n" .
 			   "  Aaron (horde)\n" .
-                           "  JACKIE GROVE (FinneganJax)\n" .
+                           "  Jax (FinneganJax)\n" .
                            "  John (CaptCynicism)\n" .
                            "  Mark Rice (Realmako)\n" .
                            "  Paul (R0CKnU)\n" .
-                           "  Ranee (A0D42)\n" .
-                           "  Sarah (sahararomeo)";
+                           "  Ranee (AoD42)\n" .
+                           "  Sarah (sahararomeo)\n" .
+                           "  SnaretheMonkey";
 		$this->sendMessage($message);
 	}
 
