@@ -72,7 +72,8 @@ abstract class EventBot extends BaseBot {
                         $this->executeHandlers(self::EVENT_CANCELED, $this->parseEventCanceledMessage());
                         break;
                     default:
-                        $this->sendMessage($this->getSystemMessageType());
+                        //$this->sendMessage($this->getSystemMessageType());
+                        return;
                 }
             }
 	}
@@ -201,10 +202,6 @@ abstract class EventBot extends BaseBot {
                 "what" => $matches[3]
             );
             return $data;
-        }
-
-        private function isSystemMessage() {
-            return $this->getInput()['system'] === true;
         }
 
         private function getSystemMessageType() {

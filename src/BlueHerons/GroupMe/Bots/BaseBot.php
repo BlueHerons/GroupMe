@@ -12,6 +12,10 @@ abstract class BaseBot {
     // Base listen method. Returns message object
     public abstract function listen();
 
+    protected function isSystemMessage() {
+        return $this->getInput()['system'] === true;
+    }
+
     protected function getInput() {
         $input = file_get_contents("php://input");
         $input = json_decode($input, true);
