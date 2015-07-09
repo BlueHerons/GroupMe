@@ -1,7 +1,7 @@
 {
     "autoload": {
         "psr-4": {
-            "BlueHerons\\GroupMe\\": "src/BlueHerons/GroupMe"
+            "BlueHerons\\": "src/BlueHerons/"
         }
     },
     "require": {
