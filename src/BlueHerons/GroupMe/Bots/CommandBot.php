@@ -7,6 +7,7 @@ abstract class CommandBot extends BaseBot {
 
     public function __construct($token) {
         parent::__construct($token);
+        $this->registerCommand("help", array($this, "listCommands"));
     }
 
     private $commands = array();
@@ -20,6 +21,16 @@ abstract class CommandBot extends BaseBot {
                 //echo $this->executeCommand($command);
             }
         }
+    }
+
+    private function listCommands() {
+        asort($this->commands);
+        $commands = array();
+        foreach ($this->commands as $cmd => $c) {
+            $commands[] = $cmd;
+        }
+
+        return "The following commands are available:\n\n" . implode("\n", $commands);
     }
 
     public function registerCommand($command, $function, $params = array()) {
