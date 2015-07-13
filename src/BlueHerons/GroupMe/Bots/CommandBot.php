@@ -43,7 +43,8 @@ abstract class CommandBot extends BaseBot {
 
     protected function getCommand() {
         $cmd = str_replace(self::COMMAND_CHAR, "", $this->getInput()['text']);
-        return str_replace(self::COMMAND_CHAR, "", explode(" ", $cmd)[0]);
+        $cmd = str_replace(self::COMMAND_CHAR, "", explode(" ", $cmd)[0]);
+        return strtolower($cmd);
     }
 
     protected function isRegisteredCommand($command) {
