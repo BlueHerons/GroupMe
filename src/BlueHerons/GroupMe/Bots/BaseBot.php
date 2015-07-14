@@ -1,25 +1,116 @@
 <?php
 namespace BlueHerons\GroupMe\Bots;
 
+use Katzgrau\KLogger\Logger;
+use Psr\Log\LogLevel;
+
 define("GROUPME_BOT_URL", "https://api.groupme.com/v3/bots/post");
 
 abstract class BaseBot {
 
+    const CONFIG_FILE = "config.json";
+    const LOG_DIR = "logs";
+
+    protected $config;
+    protected $logger;
+
+    private $payload;
+
     public function __construct($token) {
+        $this->logger = new Logger(self::LOG_DIR, LogLevel::DEBUG, array(
+            "extension" => "log",
+            "logFormat" => "[" . $token . " - {date}] [{level}] {message}"
+        ));
+
         $this->token = $token;
+
+        if (file_exists(self::CONFIG_FILE)) {       
+            $config = json_decode(file_get_contents(self::CONFIG_FILE));
+
+            if (property_exists($config, $token)) {
+                $this->config = $config->{$token};
+            }
+            else {
+                $this->logger->debug("No configuration for this bot");
+                $this->config = new \stdClass();
+            }
+        }
+        else {
+            $this->logger->debug("Config file doesnt exist");
+            $this->config = new \stdClass();
+        }
+
     }
 
-    // Base listen method. Returns message object
     public abstract function listen();
 
-    protected function isSystemMessage() {
-        return $this->getInput()['system'] === true;
+    protected function isAdmin($user) {
+        return in_array($user, $this->config->admin);
     }
 
-    protected function getInput() {
-        $input = file_get_contents("php://input");
-        $input = json_decode($input, true);
-        return $input;
+    /**
+     * Returns true if the given user id is not on the blacklist.
+     */
+    protected function isAuthorized($user) {
+        if (in_array($user, $this->config->blacklist)) {
+            $this->logger->info(sprintf("%s tried to execute a command, but is blacklisted.", $user));
+            return false;
+        }
+        return true;
+    }
+
+    protected function isSystemMessage() {
+        return $this->getPayload()['system'] === true;
+    }
+
+    /**
+     * Adds a user to the blacklist
+     */
+    protected function blackListUser($user) {
+        $this->config->blacklist[] = $user;
+        $this->logger->info(sprintf("%s was added to the blacklist.", $user));
+        $this->saveConfig();
+    }
+
+    protected function getConfig() {
+        return $this->config;
+    }
+
+    protected function getLogger() {
+        return $this->logger;
+    }
+
+    protected function saveConfig() {
+        $c = json_decode(file_get_contents(self::CONFIG_FILE));
+        $c->{$this->token} = $this->config;
+        file_put_contents(self::CONFIG_FILE, json_encode($c));
+        $this->logger->debug("Config saved");
+    }
+
+    /**
+     * Remove a user from the blacklist
+     */
+    protected function whitelistUser($user) {
+        $key = array_search($user, $this->config->blacklist);
+        if ($key !== false) {
+            unset($this->config->blacklist[$key]);
+            $this->config->blacklist = array_values($this->config->blacklist);
+            $this->logger->info(sprintf("%s was removed from the blacklist.", $user));
+            $this->saveConfig();
+        }
+    }
+
+    protected function getMessage() {
+        return $this->getPayload()['text'];
+    }
+
+    protected function getPayload() {
+        if ($this->payload == null) {
+            $input = file_get_contents("php://input");
+            $this->payload = json_decode($input, true);
+        }
+
+        return $this->payload;
     }
 
      protected function sendMessage($msg) {
