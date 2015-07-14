@@ -44,12 +44,23 @@ abstract class BaseBot {
 
     public abstract function listen();
 
+    /**
+     * Determines if the given user is an admin
+     *
+     * @param $user User ID
+     *
+     * @return boolean
+     */
     protected function isAdmin($user) {
         return in_array($user, $this->config->admin);
     }
 
     /**
      * Returns true if the given user id is not on the blacklist.
+     *
+     * @param $user user ID
+     *
+     * @return boolean
      */
     protected function isAuthorized($user) {
         if (in_array($user, $this->config->blacklist)) {
@@ -59,12 +70,19 @@ abstract class BaseBot {
         return true;
     }
 
+    /**
+     * Determines if the message is a system message
+     *
+     * @return boolean
+     */
     protected function isSystemMessage() {
         return $this->getPayload()['system'] === true;
     }
 
     /**
      * Adds a user to the blacklist
+     *
+     * @param $user user ID
      */
     protected function blackListUser($user) {
         $this->config->blacklist[] = $user;
@@ -72,14 +90,27 @@ abstract class BaseBot {
         $this->saveConfig();
     }
 
+    /**
+     * Returns the configuration for this bot
+     *
+     * @return object
+     */
     protected function getConfig() {
         return $this->config;
     }
 
+    /**
+     * Returns the logger for this bot
+     *
+     * @return Logger
+     */
     protected function getLogger() {
         return $this->logger;
     }
 
+    /**
+     * Saves configuration from memory to file
+     */
     protected function saveConfig() {
         $c = json_decode(file_get_contents(self::CONFIG_FILE));
         $c->{$this->token} = $this->config;
@@ -89,6 +120,8 @@ abstract class BaseBot {
 
     /**
      * Remove a user from the blacklist
+     *
+     * @param $user user ID
      */
     protected function whitelistUser($user) {
         $key = array_search($user, $this->config->blacklist);
@@ -100,10 +133,20 @@ abstract class BaseBot {
         }
     }
 
+    /**
+     * Gets the message that was posted to the chat
+     *
+     * @return string
+     */
     protected function getMessage() {
         return $this->getPayload()['text'];
     }
 
+    /**
+     * Returns the entire payload that was sent by GroupMe
+     *
+     * @return object
+     */
     protected function getPayload() {
         if ($this->payload == null) {
             $input = file_get_contents("php://input");
@@ -113,7 +156,10 @@ abstract class BaseBot {
         return $this->payload;
     }
 
-     protected function sendMessage($msg) {
+    /**
+     * Posts a message to the chat
+     */
+    protected function sendMessage($msg) {
         $payload = new \stdClass();
 	$payload->text = $msg;
 	$payload->bot_id = $this->token;
