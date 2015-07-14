@@ -4,8 +4,60 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "fc798f0d7fc0e1a703039d54a7510455",
+    "hash": "6c4e4d6a7c3e376f7234560e77fc4d0d",
     "packages": [
+        {
+            "name": "katzgrau/klogger",
+            "version": "1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/katzgrau/klogger.git",
+                "reference": "46cdd92a9b4a8443120cc955bf831450cb274813"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/katzgrau/klogger/zipball/46cdd92a9b4a8443120cc955bf831450cb274813",
+                "reference": "46cdd92a9b4a8443120cc955bf831450cb274813",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3",
+                "psr/log": "1.0.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "4.0.*"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Katzgrau\\KLogger\\": "src/"
+                },
+                "classmap": [
+                    "src/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Dan Horrigan",
+                    "email": "dan@dhorrigan.com",
+                    "homepage": "http://dhorrigan.com",
+                    "role": "Lead Developer"
+                },
+                {
+                    "name": "Kenny Katzgrau",
+                    "email": "katzgrau@gmail.com"
+                }
+            ],
+            "description": "A Simple Logging Class",
+            "keywords": [
+                "logging"
+            ],
+            "time": "2014-03-20 02:36:36"
+        },
         {
             "name": "php-curl-class/php-curl-class",
             "version": "2.1.1",
@@ -45,12 +97,100 @@
                 "php"
             ],
             "time": "2014-12-18 18:22:32"
+        },
+        {
+            "name": "psr/log",
+            "version": "1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/php-fig/log.git",
+                "reference": "fe0936ee26643249e916849d48e3a51d5f5e278b"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/php-fig/log/zipball/fe0936ee26643249e916849d48e3a51d5f5e278b",
+                "reference": "fe0936ee26643249e916849d48e3a51d5f5e278b",
+                "shasum": ""
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "Psr\\Log\\": ""
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "PHP-FIG",
+                    "homepage": "http://www.php-fig.org/"
+                }
+            ],
+            "description": "Common interface for logging libraries",
+            "keywords": [
+                "log",
+                "psr",
+                "psr-3"
+            ],
+            "time": "2012-12-21 11:40:51"
+        },
+        {
+            "name": "zzbomb/groupme",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/zzbomb/GroupMePHP.git",
+                "reference": "50d76c734ea813428655e1d7a46f9a49402d0351"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/zzbomb/GroupMePHP/zipball/50d76c734ea813428655e1d7a46f9a49402d0351",
+                "reference": "50d76c734ea813428655e1d7a46f9a49402d0351",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.0"
+            },
+            "require-dev": {
+                "phpunit/dbunit": "1.3.2",
+                "phpunit/phpunit": "4.6.6",
+                "phpunit/phpunit-selenium": "1.4.2"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "GroupMePHP\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "John Spaetzel",
+                    "email": "john.spaetzel@gmail.com",
+                    "homepage": "http://johnspaetzel.com",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Groupme Library for PHP",
+            "homepage": "https://github.com/zzbomb/GroupMePHP",
+            "keywords": [
+                "groupme",
+                "php"
+            ],
+            "time": "2015-05-20 23:06:52"
         }
     ],
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {
+        "zzbomb/groupme": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": [],

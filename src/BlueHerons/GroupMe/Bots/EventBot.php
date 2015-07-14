@@ -90,7 +90,7 @@ abstract class EventBot extends BaseBot {
 
         private function extractData($event) {
             $matches = array();
-            preg_match($this->events[$event], $this->getInput()['text'], $matches);
+            preg_match($this->events[$event], $this->getMessage(), $matches);
             return array_values(array_filter($matches));
         }
 
@@ -205,7 +205,7 @@ abstract class EventBot extends BaseBot {
         }
 
         private function getSystemMessageType() {
-            $message =  $this->getInput()['text'];
+            $message =  $this->getMessage();
             foreach ($this->events as $type => $regex) {
                 if (preg_match($regex, $message)) {
                     return $type;
