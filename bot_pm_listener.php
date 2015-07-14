@@ -7,7 +7,7 @@ require("vendor/autoload.php");
 //
 // On each trigger, it will retrieve the last X direct messages
 //
-// If the user id of the receipent of the direct message is the user id that sent the last message
+// If the user id of the recipient of the direct message is the user id that sent the last message
 // in the direct message, the script will fire.
 //
 // IT IS IMPORTANT THAT THE BOT SENDS A REPLY, SO THAT THE "LAST MESSAGE SENDER ID" IS NOT THE USER
@@ -41,7 +41,7 @@ if ($data->meta->code != 200 && defined("NOTIFY_ID")) {
     $gm->directmessages->create(array(
         "source_guid" => uniqid(),
         "recipient_id" => NOTIFY_ID,
-        "text" => sprintf("[Bot PM Listener] An error occured getting chat list (%s)", $chat->meta->code)
+        "text" => sprintf("[Bot PM Listener] An error occured getting chat list (%s)", $data->meta->code)
     ));
 }
 
