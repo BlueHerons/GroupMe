@@ -3,8 +3,8 @@ namespace BlueHerons\GroupMe\Bots;
 
 class WelcomeRoomBot extends EventBot {
 
-    public function __construct($token) {
-        parent::__construct($token);
+    public function __construct($token, $bot_id) {
+        parent::__construct($token, $bot_id);
 
         parent::registerHandler(EventBot::GROUP_CHANGED, array($this, "onGroupChanged"));
         parent::registerHandler(EventBot::MEMBER_ADDED, array($this, "onMemberAdded"));

@@ -5,8 +5,8 @@ abstract class CommandBot extends BaseBot {
 
     const COMMAND_CHAR = "! ";
 
-    public function __construct($token) {
-        parent::__construct($token);
+    public function __construct($token, $bot_id) {
+        parent::__construct($token, $bot_id);
         $this->registerCommand("help",   array($this, "listCommands"));
         $this->registerCommand("ignore", array($this, "ignoreUser"));
         $this->registerCommand("ack",    array($this, "acknowledgeUser"));

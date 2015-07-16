@@ -3,6 +3,7 @@ namespace BlueHerons\GroupMe\Bots;
 
 use Katzgrau\KLogger\Logger;
 use Psr\Log\LogLevel;
+use GroupMePHP;
 
 define("GROUPME_BOT_URL", "https://api.groupme.com/v3/bots/post");
 
@@ -13,33 +14,43 @@ abstract class BaseBot {
 
     protected $config;
     protected $logger;
+    protected $gm;
 
+    private $bot_id;
     private $payload;
 
-    public function __construct($token) {
+    public function __construct($token, $bot_id) {
+        $this->gm = new GroupMePHP\groupme($token);
+
         $this->logger = new Logger(self::LOG_DIR, LogLevel::DEBUG, array(
             "extension" => "log",
-            "logFormat" => "[" . $token . " - {date}] [{level}] {message}"
+            "logFormat" => "[{date} - " . $bot_id . "] [{level}] {message}"
         ));
 
         $this->token = $token;
+        $this->bot_id = $bot_id;
 
         if (file_exists(self::CONFIG_FILE)) {       
             $config = json_decode(file_get_contents(self::CONFIG_FILE));
 
-            if (property_exists($config, $token)) {
-                $this->config = $config->{$token};
+            if (property_exists($config, $bot_id)) {
+                $this->config = $config->{$bot_id};
             }
             else {
                 $this->logger->debug("No configuration for this bot");
-                $this->config = new \stdClass();
+                $this->config = (object) array(
+                    "admin" => array(),
+                    "blacklist" => array()
+                );
             }
         }
         else {
             $this->logger->debug("Config file doesnt exist");
-            $this->config = new \stdClass();
+            $this->config = (object) array(
+                "admin" => array(),
+                "blacklist" => array()
+            );
         }
-
     }
 
     public abstract function listen();
@@ -113,7 +124,7 @@ abstract class BaseBot {
      */
     protected function saveConfig() {
         $c = json_decode(file_get_contents(self::CONFIG_FILE));
-        $c->{$this->token} = $this->config;
+        $c->{$this->bot_id} = $this->config;
         file_put_contents(self::CONFIG_FILE, json_encode($c));
         $this->logger->debug("Config saved");
     }
@@ -156,31 +167,29 @@ abstract class BaseBot {
         return $this->payload;
     }
 
-    /**
-     * Posts a message to the chat
-     */
     protected function sendMessage($msg) {
-        $payload = new \stdClass();
-	$payload->text = $msg;
-	$payload->bot_id = $this->token;
+        $this->sendGroupMessage($msg, $this->getGroupID());
+    }
 
-        $payloadStr = json_encode($payload);
+    protected function sendGroupMessage($msg, $group_id) {
+        $this->gm->messages->create($group_id, array(
+            uniqid(),
+            $msg
+        ));
+    }
 
-	$url = GROUPME_BOT_URL;
-
-	$hndl = curl_init();
-	curl_setopt($hndl, CURLOPT_URL, $url);
-	curl_setopt($hndl, CURLOPT_CUSTOMREQUEST, "POST");
-	curl_setopt($hndl, CURLOPT_POSTFIELDS, $payloadStr);
-	curl_setopt($hndl, CURLOPT_RETURNTRANSFER, true);
-	curl_setopt($hndl, CURLOPT_HTTPHEADER, array(
-	    "Content-Type: application/json",
-	    "Content-Length: " .strlen($payloadStr)
-	));
-
-        sleep(1);
-	$result = curl_exec($hndl);
-	curl_close($hndl);
+    /**
+     * Gets the GroupMe group ID for the bot
+     */
+    private function getGroupID() {
+        $data = $this->gm->bots->index();
+        $data = json_decode($data);
+        foreach ($data->response as $bot) {
+            if ($bot->bot_id == $this->bot_id) {
+                return $bot->group_id;
+            }
+        }
+        return null;
     }
 }
 ?>

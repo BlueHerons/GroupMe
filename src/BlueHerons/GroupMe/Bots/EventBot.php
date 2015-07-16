@@ -31,8 +31,8 @@ abstract class EventBot extends BaseBot {
 
         private $handlers = array();
 
-        public function __construct($token) {
-            parent::__construct($token);
+        public function __construct($token, $bot_id) {
+            parent::__construct($token, $bot_id);
         }
 
 	public function listen() {
