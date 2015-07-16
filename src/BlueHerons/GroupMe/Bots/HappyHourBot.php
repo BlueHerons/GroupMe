@@ -7,8 +7,8 @@ class HappyHourBot extends CommandBot {
 
     public function __construct($token, $bot_id) {
         parent::__construct($token, $bot_id);
-        $this->registerCommand("cycle", array($this, "next_cycle"));
-        $this->registerCommand("checkpoint", array($this, "next_checkpoint"));
+        $this->registerCommand("cycle",      array($this, "next_cycle"),      "Show next checkpoint");
+        $this->registerCommand("checkpoint", array($this, "next_checkpoint"), "Show next cycle");
     }
 
     public function next_checkpoint() {

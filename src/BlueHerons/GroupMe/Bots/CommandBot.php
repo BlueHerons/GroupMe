@@ -7,9 +7,9 @@ abstract class CommandBot extends BaseBot {
 
     public function __construct($token, $bot_id) {
         parent::__construct($token, $bot_id);
-        $this->registerCommand("help",   array($this, "listCommands"));
-        $this->registerCommand("ignore", array($this, "ignoreUser"));
-        $this->registerCommand("ack",    array($this, "acknowledgeUser"));
+        $this->registerCommand("help",   array($this, "listCommands"),    "Show available commands");
+        $this->registerCommand("ignore", array($this, "ignoreUser"),      "Ignore the specified user");
+        $this->registerCommand("ack",    array($this, "acknowledgeUser"), "Acknowledge the specified user");
     }
 
     private $commands = array();
@@ -55,17 +55,32 @@ abstract class CommandBot extends BaseBot {
 
     private function listCommands() {
         $commands = array();
+        $max_cmd_length = 0;
         foreach ($this->commands as $cmd => $c) {
-            $commands[] = $cmd;
+            $commands[$cmd] = $c[1];
+            if (strlen($cmd) > $max_cmd_length) {
+                $max_cmd_length = strlen($cmd);
+            }
         }
 
-        asort($commands);
+        ksort($commands);
+        $msg = "";
 
-        return "I understand the following commands:\n\n" . implode("\n", $commands);
+        foreach ($commands as $c => $d) {
+            $msg .= $c;
+            for($i = 0; $i < $max_cmd_length - strlen($c); $i++) {
+                $msg .= " ";
+            }
+            $msg .= " => ";
+            $msg .= $d;
+            $msg .= "\n";
+        }
+
+        return "I understand the following commands:\n\n" . $msg;
     }
 
-    public function registerCommand($command, $function, $params = array()) {
-        $this->commands[$command] = array($function, $params);
+    public function registerCommand($command, $function, $help = "") {
+        $this->commands[$command] = array($function, $help);
     }
 
     public function executeCommand($command, $params = array()) {
