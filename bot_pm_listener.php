@@ -2,6 +2,9 @@
 
 require("vendor/autoload.php");
 
+use Katzgrau\KLogger\Logger;
+use Psr\Log\LogLevel;
+
 // This script is intended to be run on a schedule. It is NOT triggered by an action from the
 // GroupMe API.
 //
@@ -37,12 +40,19 @@ $data = json_decode($result);
 // Use a GroupMe API client for documented API calls
 $gm = new GroupMePHP\groupme(API_TOKEN);
 
-if ($data->meta->code != 200 && defined("NOTIFY_ID")) {
-    $gm->directmessages->create(array(
-        "source_guid" => uniqid(),
-        "recipient_id" => NOTIFY_ID,
-        "text" => sprintf("[Bot PM Listener] An error occured getting chat list (%s)", $data->meta->code)
-    ));
+$logger = new Logger("logs", LogLevel::DEBUG, array(
+    "extension" => "log",
+    "logFormat" => "[{date} Bot PM Listener] [{level}] {message}"
+));
+
+if ($data->meta->code != 200) {
+    // Ignore some codes
+    if ($data->meta->code == 408) { // Timeout
+        // Do nothing
+    }
+    else {
+        $logger->debug(sprintf("An error occured getting chat list (%s)", $data->meta->code));
+    }
 }
 
 foreach ($data->response->chats as $chat) {
