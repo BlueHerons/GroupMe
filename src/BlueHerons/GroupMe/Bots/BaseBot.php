@@ -30,6 +30,9 @@ abstract class BaseBot {
         $this->token = $token;
         $this->bot_id = $bot_id;
 
+        $input = file_get_contents("php://input");
+        $this->payload = json_decode($input, true);
+
         if (file_exists(self::CONFIG_FILE)) {       
             $config = json_decode(file_get_contents(self::CONFIG_FILE));
 
@@ -51,6 +54,8 @@ abstract class BaseBot {
                 "blacklist" => array()
             );
         }
+
+        $this->saveConfig();
     }
 
     public abstract function listen();
@@ -150,7 +155,7 @@ abstract class BaseBot {
      * @return string
      */
     protected function getMessage() {
-        return $this->getPayload()['text'];
+        return $this->payload['text'];
     }
 
     /**
@@ -159,18 +164,26 @@ abstract class BaseBot {
      * @return object
      */
     protected function getPayload() {
-        if ($this->payload == null) {
-            $input = file_get_contents("php://input");
-            $this->payload = json_decode($input, true);
-        }
-
         return $this->payload;
     }
 
+    /**
+     * Sends a message to the same group that triggered the bot. The account who's $token is used
+     * must be a member of that group for this to work.
+     *
+     * @param $msg the message to send
+     */
     protected function sendMessage($msg) {
         $this->sendGroupMessage($msg, $this->getGroupID());
     }
 
+    /**
+     * Sends a message to the specified group. The account who's $token is used must be a member
+     * of that group for this to work.
+     *
+     * @param $msg the message to send
+     * @param $group_id the group id
+     */
     protected function sendGroupMessage($msg, $group_id) {
         $this->gm->messages->create($group_id, array(
             uniqid(),
@@ -179,17 +192,10 @@ abstract class BaseBot {
     }
 
     /**
-     * Gets the GroupMe group ID for the bot
+     * Gets the GroupMe group ID that triggered the message
      */
-    private function getGroupID() {
-        $data = $this->gm->bots->index();
-        $data = json_decode($data);
-        foreach ($data->response as $bot) {
-            if ($bot->bot_id == $this->bot_id) {
-                return $bot->group_id;
-            }
-        }
-        return null;
+    protected function getGroupID() {
+        return $this->payload['group_id'];
     }
 }
 ?>
