@@ -2,6 +2,7 @@
 namespace BlueHerons\GroupMe\Bots;
 
 use \BlueHerons\Cycle\Cycle;
+use \DateTime;
 
 class HappyHourBot extends CommandBot {
 
