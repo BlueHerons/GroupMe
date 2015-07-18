@@ -33,7 +33,7 @@ abstract class CommandBot extends BaseBot {
         if (count($args) == 2) {
             $user = $args[1];
             if ($this->isAdmin($user)) {
-                return sprintf("I'm sorry, %s. I'm afraid I can't do that.", $args[0]['name']);
+                return sprintf("I'm sorry, @%s. I'm afraid I can't do that.", $args[0]['name']);
             }
             else {
                 $this->blacklistUser($user);
