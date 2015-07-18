@@ -51,8 +51,9 @@ if ($data->meta->code != 200) {
         // Do nothing
     }
     else {
-        $logger->debug(sprintf("An error occured getting chat list (%s)", $data->meta->code));
+        $logger->debug(sprintf("An error occured getting chat list (%s)", print_r($data, true)));
     }
+    die();
 }
 
 foreach ($data->response->chats as $chat) {
