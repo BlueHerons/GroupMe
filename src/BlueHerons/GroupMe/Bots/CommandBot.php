@@ -36,9 +36,10 @@ abstract class CommandBot extends BaseBot {
                 return sprintf("I'm sorry, @%s. I'm afraid I can't do that.", $args[0]['name']);
             }
             else {
+                $name = is_numeric($user) ? $this->getMemberByID($user)->nickname : $user;
                 $this->blacklistUser($user);
-                $this->logger->info(sprintf("%s was added to the blacklist by %s", $user, $args[0]['sender_id']));
-                return sprintf("I will ignore commands from user %s.", $user);
+                $this->logger->info(sprintf("%s (%s) was added to the blacklist by %s", $name, $user, $args[0]['sender_id']));
+                return sprintf("I will ignore commands from @%s.", $name);
             }
         }
     }
@@ -47,9 +48,10 @@ abstract class CommandBot extends BaseBot {
         $args = func_get_args();
         if (count($args) == 2) {
             $user = $args[1];
+            $name = is_numeric($user) ? $this->getMemberByID($user)->nickname : $user;
             $this->whitelistUser($user);
-            $this->logger->info(sprintf("%s was removed from the blacklist by %s", $user, $args[0]['sender_id']));
-            return sprintf("I will acknowledge commands from user %s.", $user);
+            $this->logger->info(sprintf("%s (%s) was removed from the blacklist by %s", $name, $user, $args[0]['sender_id']));
+            return sprintf("I will acknowledge commands from @%s.", $name);
         }
     }
 
