@@ -191,10 +191,8 @@ abstract class BaseBot {
      * @param $group_id the group id
      */
     protected function sendGroupMessage($msg, $group_id) {
-        //$msg = print_r($this->getMentions($msg), true);
-        $this->logger->debug(sprintf("Sending '%s' to group %s", $msg, $group_id));
-
         sleep(1);
+        //$msg = print_r($this->getMentions($msg), true);
         $result = $this->gm->messages->create($group_id, array(
             md5(time() . uniqid()),
             $msg,
@@ -276,9 +274,9 @@ abstract class BaseBot {
      * @param $partial_name name to use for a search.
      */
     protected function searchMemberByName($partial_name) {
-        $partial_name = preg_replace("/^[A-Za-z0-9]/", "", $partial_name);
+        //$partial_name = preg_replace("/^[A-Za-z0-9]/", "", $partial_name);
         foreach ($this->getGroupMembers() as $member) {
-            if (strpos($member->nickname, $partial_name) !== false) {
+            if (stripos($member->nickname, $partial_name) !== false) {
                 $this->logger->debug(sprintf("Found user '%s' searching for '%s'", $member->nickname, $partial_name));
                 return $member;
             }
@@ -311,7 +309,7 @@ abstract class BaseBot {
             // After each @, get the length of the sequence of characters until something non-alphanumeric is
             // encoumtered
             foreach ($positions as $p) {
-                $seq = array_values(array_filter(preg_split("/[^a-z0-9]/i", substr($message, $p))))[0];
+                $seq = array_values(array_filter(preg_split("/[^a-z0-9 ()]/i", substr($message, $p))))[0];
                 $i = strpos($message, " ", $p);
                 $i = ($i === false) ? strlen($message) : $i;
                 $loci[] = array($p, $p + strlen($seq));
@@ -320,10 +318,10 @@ abstract class BaseBot {
             // Extract the string between each loci, and use it to search for users
             foreach ($loci as $l) {
                 $str = substr($message, $l[0] + strlen($needle), $l[1] - $l[0]);
-                $id = $this->searchMemberByName($str);
-                if ($id !== false) {
+                $user = $this->searchMemberByName($str);
+                if ($user !== false) {
                     $mentions->loci[] = array($l[0], strlen($str) + 1);
-                    $mentions->user_ids[] = $id->user_id;
+                    $mentions->user_ids[] = $user->user_id;
                 }
             }
 
