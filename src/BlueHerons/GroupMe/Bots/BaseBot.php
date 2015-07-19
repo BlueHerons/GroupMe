@@ -69,7 +69,10 @@ abstract class BaseBot {
      * @return boolean
      */
     protected function isAdmin($user) {
-        return in_array($user, $this->config->admin);
+        $id = is_numeric($user) ?
+                $user :
+                $this->searchMemberByName($user)->user_id;
+        return in_array($id, $this->config->admin);
     }
 
     /**
