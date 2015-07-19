@@ -30,15 +30,16 @@ abstract class CommandBot extends BaseBot {
 
     private function ignoreUser() {
         $args = func_get_args();
-        if (count($args) == 2) {
-            $user = $args[1];
+        if (count($args) >= 2) {
+            $user = implode(" ", array_slice($args, 1));
             if ($this->isAdmin($user)) {
                 return sprintf("I'm sorry, @%s. I'm afraid I can't do that.", $args[0]['name']);
             }
             else {
+                $id = is_numeric($user) ? $id : $this->searchMemberByName($user)->user_id;
                 $name = is_numeric($user) ? $this->getMemberByID($user)->nickname : $user;
-                $this->blacklistUser($user);
-                $this->logger->info(sprintf("%s (%s) was added to the blacklist by %s", $name, $user, $args[0]['sender_id']));
+                $this->blacklistUser($id);
+                $this->logger->info(sprintf("%s (%s) was added to the blacklist by %s", $name, $id, $args[0]['sender_id']));
                 return sprintf("I will ignore commands from @%s.", $name);
             }
         }
@@ -46,11 +47,12 @@ abstract class CommandBot extends BaseBot {
 
     private function acknowledgeUser() {
         $args = func_get_args();
-        if (count($args) == 2) {
-            $user = $args[1];
+        if (count($args) >= 2) {
+            $user = implode(" ", array_slice($args, 1));
+            $id = is_numeric($user) ? $id : $this->searchMemberByName($user)->user_id;
             $name = is_numeric($user) ? $this->getMemberByID($user)->nickname : $user;
-            $this->whitelistUser($user);
-            $this->logger->info(sprintf("%s (%s) was removed from the blacklist by %s", $name, $user, $args[0]['sender_id']));
+            $this->whitelistUser($id);
+            $this->logger->info(sprintf("%s (%s) was removed from the blacklist by %s", $name, $id, $args[0]['sender_id']));
             return sprintf("I will acknowledge commands from @%s.", $name);
         }
     }
