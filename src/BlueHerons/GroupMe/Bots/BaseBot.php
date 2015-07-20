@@ -333,5 +333,9 @@ abstract class BaseBot {
             }
         }
     }
+
+    protected function enableNotifications($on = true) {
+        $this->gm->groups->update($this->getGroupID(), array("office_mode" => !$on));
+    }
 }
 ?>
