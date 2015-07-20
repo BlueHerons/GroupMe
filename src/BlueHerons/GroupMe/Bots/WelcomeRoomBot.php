@@ -44,7 +44,10 @@ class WelcomeRoomBot extends EventBot {
     }
 
     public function onOfficeModeChanged($data) {
-        $this->sendMessage("Office mode changed");
+        if ($data['what'] != "enabled") {
+            $this->sendMessage(sprintf("If you dont mind, @%s, I'm going to turn that back on so liason agents will get notifications from this room.\n\nThe \"Office Mode\" setting affects notifications for everyone in the group. To disable notifications for you only, use the \"mute\" option, or check out this tutorial: %s", $data['who'], "http://blueheronsresistance.com/faq/disable-notifications-in-groupme"));
+            $this->enableNotifications();
+        }
     }
 
     public function onEventRSVP($data) {
