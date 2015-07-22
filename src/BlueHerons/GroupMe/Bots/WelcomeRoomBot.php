@@ -23,21 +23,21 @@ class WelcomeRoomBot extends EventBot {
     }
 
     public function onMemberAdded($data) {
-        $this->sendMessage(sprintf("Thanks, @%s.\n\nWelcome, @%s! Please let us know your agent name and where you play.\n\nThe purpose of this group is to get you connected with other local players in your area.", $data['by'], $data['who']));
+        $this->sendMessage(sprintf("Thanks, @%s.\n\nWelcome, @%s! Please let us know your agent name and where you play.\n\nThe purpose of this group is to get you connected with other local players in your area.", $data['by'], $data['who']->nickname));
     }
 
     public function onMemberRemoved($data) {
     }
 
     public function onMemberJoined($data) {
-        $this->sendMessage(sprintf("Welcome, @%s! Please let us know your agent name and where you play.\n\nThe purpose of this group is to get you connected with other local players in your area.", $data['who']));
+        $this->sendMessage(sprintf("Welcome, @%s! Please let us know your agent name and where you play.\n\nThe purpose of this group is to get you connected with other local players in your area.", $data['who']->nickname));
     }
 
     public function onMemberLeft($data) {
     }
 
     public function onMemberRejoined($data) {
-        $this->sendMessage(sprintf("Welcome back, @%s!", $data['who']));
+        $this->sendMessage(sprintf("Welcome back, @%s!", $data['who']->nickname));
     }
     
     public function onMemberNameChange($data) {
@@ -45,7 +45,7 @@ class WelcomeRoomBot extends EventBot {
 
     public function onOfficeModeChanged($data) {
         if ($data['what'] != "enabled") {
-            $this->sendMessage(sprintf("If you dont mind, @%s, I'm going to turn that back on so liason agents will get notifications from this room.\n\nThe \"Office Mode\" setting affects notifications for everyone in the group. To disable notifications for you only, use the \"mute\" option, or check out this tutorial: %s", $data['who'], "http://blueheronsresistance.com/faq/disable-notifications-in-groupme"));
+            $this->sendMessage(sprintf("If you dont mind, @%s, I'm going to turn that back on so liason agents will get notifications from this room.\n\nThe \"Office Mode\" setting affects notifications for everyone in the group. To disable notifications for you only, use the \"mute\" option, or check out this tutorial: %s", $data['who']->nickname, "http://blueheronsresistance.com/faq/disable-notifications-in-groupme"));
             $this->enableNotifications();
         }
     }

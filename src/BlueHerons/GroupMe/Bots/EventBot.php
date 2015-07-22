@@ -14,6 +14,7 @@ abstract class EventBot extends BaseBot {
         const EVENT_RSVP                = "event_rsvp";
         const EVENT_CHANGED             = "event_changed";
         const EVENT_CANCELED            = "event_canceled";
+        const MESSAGE                   = "message";
 
         private $events = array(
             self::GROUP_CHANGED             => "/^(.*)( changed the ((topic) to:|group's (name) to|group's (avatar)) ?)(.*)?$/",
@@ -76,6 +77,8 @@ abstract class EventBot extends BaseBot {
                         return;
                 }
             }
+            else {
+            }
 	}
 
         public function registerHandler($event, $callee) {
@@ -99,8 +102,8 @@ abstract class EventBot extends BaseBot {
             $data = array(
                 "event" => self::GROUP_CHANGED,
                 "change" => $matches[4],
-                "who" => $matches[1],
-                "what" => $matches[3] == "group's avatar" ? "unavailable" : $matches[5]
+                "who" => $this->searchMemberByName($matches[1]),
+                "what" => $matches[3] == "group's avatar" ? "url_unavailable" : $matches[5]
             );
             return $data;
         }
@@ -109,8 +112,8 @@ abstract class EventBot extends BaseBot {
             $matches = $this->extractData(self::MEMBER_ADDED);
             $data = array(
                 "event" => self::MEMBER_ADDED,
-                "who" => $matches[3],
-                "by" => $matches[1]
+                "who" => $this->searchMemberByName($matches[3]),
+                "by" => $this->searchMemberByName($matches[1])
             );
             return $data;
         }
@@ -119,8 +122,8 @@ abstract class EventBot extends BaseBot {
             $matches = $this->extractData(self::MEMBER_REMOVED);
             $data = array(
                 "event" => self::MEMBER_REMOVED,
-                "who" => $matches[3],
-                "by" => $matches[1]
+                "who" => $this->searchMemberByName($matches[3]),
+                "by" => $this->searchMemberByName($matches[1])
             );
             return $data;
         }
@@ -129,7 +132,7 @@ abstract class EventBot extends BaseBot {
             $matches = $this->extractData(self::MEMBER_JOINED);
             $data = array(
                 "event" => self::MEMBER_JOINED,
-                "who" => $matches[1]
+                "who" => $this->searchMemberByName($matches[1])
             );
             return $data;
         }
@@ -147,7 +150,7 @@ abstract class EventBot extends BaseBot {
             $matches = $this->extractData(self::MEMBER_REJOINED);
             $data = array(
                 "event" => self::MEMBER_REJOINED,
-                "who" => $matches[1]
+                "who" => $this->searchMemberByName($matches[1])
             );
             return $data;
         }
@@ -166,7 +169,7 @@ abstract class EventBot extends BaseBot {
             $matches = $this->extractData(self::OFFICE_MODE_CHANGED);
             $data = array(
                 "event" => self::OFFICE_MODE_CHANGED,
-                "who" => $matches[1],
+                "who" => $this->searchMemberByName($matches[1]),
                 "what" => $matches[4] == "dis" ? "enabled" : "disabled",
             );
             return $data;
@@ -176,7 +179,7 @@ abstract class EventBot extends BaseBot {
             $matches = $this->extractData(self::EVENT_RSVP);
             $data = array(
                 "event" => self::EVENT_RSVP,
-                "who" => $matches[1],
+                "who" => $this->searchMemberByName($matches[1]),
                 "what" => $matches[4],
                 "rsvp" => $matches[3] == "going" ? "yes" : "no"
             );
@@ -187,7 +190,7 @@ abstract class EventBot extends BaseBot {
             $matches = $this->extractData(self::EVENT_CHANGED);
             $data = array(
                 "event" => self::EVENT_CHANGED,
-                "who" => $matches[1],
+                "who" => $this->searchMemberByName($matches[1]),
                 "what" => $matches[4],
                 "change" => $matches[3]
             );
@@ -198,7 +201,7 @@ abstract class EventBot extends BaseBot {
             $matches = $this->extractData(self::EVENT_CANCELED);
             $data = array(
                 "event" => self::EVENT_CANCELED,
-                "who" => $matches[1],
+                "who" => $this->searchMemberByName($matches[1]),
                 "what" => $matches[3]
             );
             return $data;
