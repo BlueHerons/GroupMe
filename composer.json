@@ -1,4 +1,5 @@
 {
+    "name" : "BlueHerons/GroupMe",
     "autoload": {
         "psr-4": {
             "BlueHerons\\": "src/BlueHerons/"
@@ -8,5 +9,11 @@
         "katzgrau/klogger": "1.0.*",
 	"php-curl-class/php-curl-class": "~2.1",
         "zzbomb/groupme": "dev-master"
-    }
+    },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url":  "https://github.com/johnluetke/GroupMePHP"
+        }
+    ]
 }

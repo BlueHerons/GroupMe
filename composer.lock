@@ -4,7 +4,7 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "6c4e4d6a7c3e376f7234560e77fc4d0d",
+    "hash": "cc2b27af26998b1481855a1d0c4ed85f",
     "packages": [
         {
             "name": "katzgrau/klogger",
@@ -141,13 +141,13 @@
             "version": "dev-master",
             "source": {
                 "type": "git",
-                "url": "https://github.com/zzbomb/GroupMePHP.git",
-                "reference": "50d76c734ea813428655e1d7a46f9a49402d0351"
+                "url": "https://github.com/johnluetke/GroupMePHP.git",
+                "reference": "0fa7bb0cbbb7723a6d89ed3a0dffcdc3a093f604"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/zzbomb/GroupMePHP/zipball/50d76c734ea813428655e1d7a46f9a49402d0351",
-                "reference": "50d76c734ea813428655e1d7a46f9a49402d0351",
+                "url": "https://api.github.com/repos/johnluetke/GroupMePHP/zipball/0fa7bb0cbbb7723a6d89ed3a0dffcdc3a093f604",
+                "reference": "0fa7bb0cbbb7723a6d89ed3a0dffcdc3a093f604",
                 "shasum": ""
             },
             "require": {
@@ -164,7 +164,6 @@
                     "GroupMePHP\\": "src/"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
@@ -182,7 +181,10 @@
                 "groupme",
                 "php"
             ],
-            "time": "2015-05-20 23:06:52"
+            "support": {
+                "source": "https://github.com/johnluetke/GroupMePHP/tree/master"
+            },
+            "time": "2015-07-22 21:16:31"
         }
     ],
     "packages-dev": [],
