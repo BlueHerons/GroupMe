@@ -17,6 +17,7 @@ abstract class BaseBot {
     protected $gm;
 
     private $bot_id;
+    private $user_id;
     private $payload;
     private $group;
 
@@ -55,6 +56,9 @@ abstract class BaseBot {
                 "blacklist" => array()
             );
         }
+
+        $me = json_decode($this->gm->users->index())->response;
+        $this->user_id = $me->user_id;
 
         $this->saveConfig();
     }
@@ -117,6 +121,13 @@ abstract class BaseBot {
      */
     protected function getConfig() {
         return $this->config;
+    }
+
+    /**
+     * Returns the user_id of the bot
+     */
+    protected function getUserID() {
+        return $this->user_id;
     }
 
     /**
@@ -336,6 +347,17 @@ abstract class BaseBot {
 
     protected function enableNotifications($on = true) {
         $this->gm->groups->update($this->getGroupID(), array("office_mode" => !$on));
+    }
+
+    /**
+     * Upload and change the image for the group.
+     *
+     * @param $image_url URL to the image.
+     */
+    protected function changeGroupImage($image_url) {
+        $img = $this->gm->images->pictures($image_url);
+        $img = json_decode($img)->payload;
+        $this->gm->groups->update($this->getGroupID(), array("image_url" => $img->url));
     }
 }
 ?>
