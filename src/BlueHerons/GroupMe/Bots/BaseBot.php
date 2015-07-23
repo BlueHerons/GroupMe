@@ -332,7 +332,20 @@ abstract class BaseBot {
             // Extract the string between each loci, and use it to search for users
             foreach ($loci as $l) {
                 $str = substr($message, $l[0] + strlen($needle), $l[1] - $l[0]);
-                $user = $this->searchMemberByName($str);
+                // If there are spaces, do a number of searches
+                $user = false;
+                if (strpos($str, " ") !== false) {
+                    $tokens = array_merge(array($str), explode(" ", $str));
+                    foreach ($tokens as $token) {
+                        $user = $this->searchMemberByName($token);
+                        if ($user !== false) {
+                            break;
+                        }
+                    }
+                }
+                else {
+                    $user = $this->searchMemberByName($str);
+                }
                 if ($user !== false) {
                     $mentions->loci[] = array($l[0], strlen($str) + 1);
                     $mentions->user_ids[] = $user->user_id;
