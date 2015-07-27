@@ -9,7 +9,7 @@ class SmurflingBot extends CommandBot {
     }
 
     public function lessons_link() {
-        return sprintf("Smurfling lessons an be found at %s. These infographics are a great supplement to in-game training.", "http://blueheronsresistance.com/guide/lessons");
+        return sprintf("Smurfling lessons can be found at %s. These infographics are a great supplement to in-game training.", "http://blueheronsresistance.com/guide/lessons");
     }
 }
 ?>
