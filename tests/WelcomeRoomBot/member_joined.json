@@ -1,0 +1,14 @@
+{
+  "attachments": [],
+  "avatar_url": "http://i.groupme.com/123456789",
+  "created_at": 1302623328,
+  "group_id": "15033208",
+  "id": "1234567890",
+  "name": "Bogus User",
+  "sender_id": "-1",
+  "sender_type": "user",
+  "source_guid": "1-22-333-4444-5555-6666",
+  "system": true,
+  "text": "Bogus User has joined the group",
+  "user_id": "-1"
+}
