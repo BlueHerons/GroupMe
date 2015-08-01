@@ -22,6 +22,8 @@ abstract class BaseBot {
     private $group;
 
     public function __construct($token, $bot_id) {
+        $this->BOGUS_GROUPME_USER = json_decode('{"nickname": "Bogus User", "user_id": -1}');
+
         $this->gm = new GroupMePHP\groupme($token);
 
         $this->logger = new Logger(self::LOG_DIR, LogLevel::DEBUG, array(
@@ -37,22 +39,27 @@ abstract class BaseBot {
 
         if (file_exists(self::CONFIG_FILE)) {       
             $config = json_decode(file_get_contents(self::CONFIG_FILE));
+            $this->gconfig = $config;
 
-            if (property_exists($config, $bot_id)) {
-                $this->config = $config->{$bot_id};
+            if (isset($config->bots->{$bot_id})) {
+                $this->config = $config->bots->{$bot_id};
             }
             else {
                 $this->logger->debug("No configuration for " . $bot_id);
                 $this->config = (object) array(
-                    "admin" => array(),
+                    "bot" => get_class($this),
+                    "mods" => array(),
                     "blacklist" => array()
                 );
             }
+
+            unset($this->gconfig->bots);
         }
         else {
             $this->logger->debug("Config file doesnt exist");
             $this->config = (object) array(
-                "admin" => array(),
+                "bot" => get_class($this),
+                "mods" => array(),
                 "blacklist" => array()
             );
         }
@@ -68,7 +75,7 @@ abstract class BaseBot {
     /**
      * Determines if the given user is an admin
      *
-     * @param $user User ID
+     * @param mixed $user user_id or name to search users for
      *
      * @return boolean
      */
@@ -76,19 +83,33 @@ abstract class BaseBot {
         $id = is_numeric($user) ?
                 $user :
                 $this->searchMemberByName($user)->user_id;
-        return in_array($id, $this->config->admin);
+        return in_array($id, $this->gconfig->admin);
+    }
+
+    /**
+     * Determines if the given user is a mod
+     *
+     * @param mixed $user user_id or name to search users for
+     *
+     * @return boolean
+     */
+    protected function isMod($user) {
+        $id = is_numeric($user) ?
+                $user :
+                $this->searchMemberByName($user)->user_id;
+        return in_array($id, $this->config->mods);
     }
 
     /**
      * Returns true if the given user id is not on the blacklist.
      *
-     * @param $user user ID
+     * @param int $user user ID
      *
      * @return boolean
      */
     protected function isAuthorized($user) {
         if (in_array($user, $this->config->blacklist)) {
-            $this->logger->info(sprintf("%s tried to execute a command, but is blacklisted.", $user));
+            $this->logger->info(sprintf("%s is blacklisted.", $user));
             return false;
         }
         return true;
@@ -106,9 +127,9 @@ abstract class BaseBot {
     /**
      * Adds a user to the blacklist
      *
-     * @param $user user ID
+     * @param int $user user ID
      */
-    protected function blackListUser($user) {
+    protected function addToBlacklist($user) {
         $this->config->blacklist[] = $user;
         $this->logger->info(sprintf("%s was added to the blacklist.", $user));
         $this->saveConfig();
@@ -144,17 +165,17 @@ abstract class BaseBot {
      */
     protected function saveConfig() {
         $c = json_decode(file_get_contents(self::CONFIG_FILE));
-        $c->{$this->bot_id} = $this->config;
-        file_put_contents(self::CONFIG_FILE, json_encode($c));
+        $c->bots->{$this->bot_id} = $this->config;
+        file_put_contents(self::CONFIG_FILE, json_encode($c, JSON_PRETTY_PRINT));
         $this->logger->debug("Config saved");
     }
 
     /**
      * Remove a user from the blacklist
      *
-     * @param $user user ID
+     * @param int $user user ID
      */
-    protected function whitelistUser($user) {
+    protected function removeFromBlacklist($user) {
         $key = array_search($user, $this->config->blacklist);
         if ($key !== false) {
             unset($this->config->blacklist[$key]);
@@ -186,7 +207,7 @@ abstract class BaseBot {
      * Sends a message to the same group that triggered the bot. The account who's $token is used
      * must be a member of that group for this to work.
      *
-     * @param $msg the message to send
+     * @param string $msg the message to send
      */
     protected function sendMessage($msg) {
         try {
@@ -201,12 +222,11 @@ abstract class BaseBot {
      * Sends a message to the specified group. The account who's $token is used must be a member
      * of that group for this to work.
      *
-     * @param $msg the message to send
-     * @param $group_id the group id
+     * @param string $msg the message to send
+     * @param int $group_id the group id
      */
     protected function sendGroupMessage($msg, $group_id) {
         sleep(1);
-        //$msg = print_r($this->getMentions($msg), true);
         $result = $this->gm->messages->create($group_id, array(
             md5(time() . uniqid()),
             $msg,
@@ -224,10 +244,8 @@ abstract class BaseBot {
             $group_id = $this->payload['group_id'];
         }
         else {
-            //throw new \Exception("Group ID unavailable");
-            $group_id = 15033208;
+            throw new \Exception("Group ID unavailable");
         }
-        $this->logger->debug("Group id: " . $group_id);
         return $group_id;
     }
 
@@ -256,7 +274,11 @@ abstract class BaseBot {
 
     /**
      * Searches the group members for a member having the given name, and returns information
-     * about them
+     * about them. There MUST be an exact match, or false will be returned.
+     *
+     * @param string $name the name
+     *
+     * @return mixed member object if found, or false
      */
     protected function getMemberByName($name) {
         foreach ($this->getGroupMembers() as $member) {
@@ -268,8 +290,12 @@ abstract class BaseBot {
     }
 
     /**
-     * Searches the group members for a member having the given name, and returns information
-     * about them
+     * Searches the group members for a member having the given user_id, and returns information
+     * about them.
+     *
+     * @param int $id user_id
+     *
+     * @return mixed member object if found, or false
      */
     protected function getMemberByID($id) {
         $id .= ""; // force string
@@ -286,16 +312,17 @@ abstract class BaseBot {
      * The first match is returned, or false if no matches
      *
      * @param $partial_name name to use for a search.
+     *
+     * @return mixed member object if found, or false
      */
     protected function searchMemberByName($partial_name) {
-        //$partial_name = preg_replace("/^[A-Za-z0-9]/", "", $partial_name);
         foreach ($this->getGroupMembers() as $member) {
             if (stripos($member->nickname, $partial_name) !== false) {
                 $this->logger->debug(sprintf("Found user '%s' searching for '%s'", $member->nickname, $partial_name));
                 return $member;
             }
         }
-        return false;
+        return $this->BOGUS_GROUPME_USER;
     }
 
     /**
@@ -358,6 +385,11 @@ abstract class BaseBot {
         }
     }
 
+    /**
+     * Enable or disable group-wide notifications
+     *
+     * @param boolean $on true to enable, false to disable
+     */
     protected function enableNotifications($on = true) {
         $this->gm->groups->update($this->getGroupID(), array("office_mode" => !$on));
     }

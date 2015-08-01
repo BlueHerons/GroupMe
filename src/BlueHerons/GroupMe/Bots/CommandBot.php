@@ -1,7 +1,7 @@
 <?php
 namespace BlueHerons\GroupMe\Bots;
 
-abstract class CommandBot extends BaseBot {
+abstract class CommandBot extends EventBot {
 
     const COMMAND_CHAR = "! ";
 
@@ -32,13 +32,14 @@ abstract class CommandBot extends BaseBot {
         $args = func_get_args();
         if (count($args) >= 2) {
             $user = implode(" ", array_slice($args, 1));
-            if ($this->isAdmin($user)) {
+            if ($this->isAdmin($user) || $this->isMod($user)) {
                 return sprintf("I'm sorry, @%s. I'm afraid I can't do that.", $args[0]['name']);
             }
             else {
                 $id = is_numeric($user) ? $id : $this->searchMemberByName($user)->user_id;
-                $name = is_numeric($user) ? $this->getMemberByID($user)->nickname : $user;
-                $this->blacklistUser($id);
+                $name = $this->getMemberByID($id)->nickname;
+
+                $this->addToBlacklist($id);
                 $this->logger->info(sprintf("%s (%s) was added to the blacklist by %s", $name, $id, $args[0]['sender_id']));
                 return sprintf("I will ignore commands from @%s.", $name);
             }
@@ -51,7 +52,7 @@ abstract class CommandBot extends BaseBot {
             $user = implode(" ", array_slice($args, 1));
             $id = is_numeric($user) ? $id : $this->searchMemberByName($user)->user_id;
             $name = is_numeric($user) ? $this->getMemberByID($user)->nickname : $user;
-            $this->whitelistUser($id);
+            $this->removeFromBlacklist($id);
             $this->logger->info(sprintf("%s (%s) was removed from the blacklist by %s", $name, $id, $args[0]['sender_id']));
             return sprintf("I will acknowledge commands from @%s.", $name);
         }

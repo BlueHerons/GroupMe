@@ -3,31 +3,32 @@ namespace BlueHerons\GroupMe\Bots;
 
 abstract class EventBot extends BaseBot {
 
+        const EVENT_CANCELED            = "event_canceled";
+        const EVENT_CHANGED             = "event_changed";
+        const EVENT_RSVP                = "event_rsvp";
         const GROUP_CHANGED             = "group_changed";
         const MEMBER_ADDED              = "member_added";
-        const MEMBER_REMOVED            = "member_removed";
+        const MEMBER_CHANGED_NAME       = "member_changed_name";
         const MEMBER_JOINED             = "member_joined";
         const MEMBER_LEFT               = "member_left";
         const MEMBER_REJOINED           = "member_rejoined";
-        const MEMBER_CHANGED_NAME       = "member_changed_name";
-        const OFFICE_MODE_CHANGED       = "office_mode_changed";
-        const EVENT_RSVP                = "event_rsvp";
-        const EVENT_CHANGED             = "event_changed";
-        const EVENT_CANCELED            = "event_canceled";
+        const MEMBER_REMOVED            = "member_removed";
         const MESSAGE                   = "message";
+        const OFFICE_MODE_CHANGED       = "office_mode_changed";
+        const UNKNOWN                   = "unknown_event";
 
         private $events = array(
+            self::EVENT_CANCELED            => "/^(.*)( canceled )'(.*)'$/",
+            self::EVENT_CHANGED             => "/^(.*)( updated the (description|image url|name) for the event )'(.*)'$/",
+            self::EVENT_RSVP                => "/^(.*)(is (going|not going) to )'(.*)'$/",
             self::GROUP_CHANGED             => "/^(.*)( changed the ((topic) to:|group's (name) to|group's (avatar)) ?)(.*)?$/",
             self::MEMBER_ADDED              => "/^(.*)( added )(.*)( to the group)$/",
-            self::MEMBER_REMOVED            => "/^(.*)( removed )(.*)( from the group\.)$/",
+            self::MEMBER_CHANGED_NAME       => "/^(.*)( changed name to )(.*)$/",
             self::MEMBER_JOINED             => "/^(.*)( has joined the group)$/",
             self::MEMBER_LEFT               => "/^(.*)( has left the group\.)$/",
             self::MEMBER_REJOINED           => "/^(.*)( has rejoined the group)$/",
-            self::MEMBER_CHANGED_NAME       => "/^(.*)( changed name to )(.*)$/",
+            self::MEMBER_REMOVED            => "/^(.*)( removed )(.*)( from the group\.)$/",
             self::OFFICE_MODE_CHANGED       => "/^(.*)( ((dis|en)abled) Office Mode. Messages (will|won't) buzz your phone\.)$/",
-            self::EVENT_RSVP                => "/^(.*)(is (going|not going) to )'(.*)'$/",
-            self::EVENT_CHANGED             => "/^(.*)( updated the (description|image url|name) for the event )'(.*)'$/",
-            self::EVENT_CANCELED            => "/^(.*)( canceled )'(.*)'$/"
         );
 
         private $handlers = array();
@@ -39,14 +40,23 @@ abstract class EventBot extends BaseBot {
 	public function listen() {
             if ($this->isSystemMessage()) {
                 switch ($this->getSystemMessageType()) {
+                    case self::EVENT_CANCELED:
+                        $this->executeHandlers(self::EVENT_CANCELED, $this->parseEventCanceledMessage());
+                        break;
+                    case self::EVENT_CHANGED:
+                        $this->executeHandlers(self::EVENT_CHANGED, $this->parseEventChangedMessage());
+                        break;
+                    case self::EVENT_RSVP:
+                        $this->executeHandlers(self::EVENT_RSVP, $this->parseEventRSVPMessage());
+                        break;
                     case self::GROUP_CHANGED:
                         $this->executeHandlers(self::GROUP_CHANGED, $this->parseGroupChangedMessage());
                         break;
                     case self::MEMBER_ADDED:
                         $this->executeHandlers(self::MEMBER_ADDED, $this->parseMemberAddedMessage());
                         break;
-                    case self::MEMBER_REMOVED:
-                        $this->executeHandlers(self::MEMBER_REMOVED, $this->parseMemberRemovedMessage());
+                    case self::MEMBER_CHANGED_NAME:
+                        $this->executeHandlers(self::MEMBER_CHANGED_NAME, $this->parseMemberNameChangeMessage());
                         break;
                     case self::MEMBER_JOINED:
                         $this->executeHandlers(self::MEMBER_JOINED, $this->parseMemberJoinedMessage());
@@ -57,27 +67,19 @@ abstract class EventBot extends BaseBot {
                     case self::MEMBER_REJOINED:
                         $this->executeHandlers(self::MEMBER_REJOINED, $this->parseMemberRejoinedMessage());
                         break;
-                    case self::MEMBER_CHANGED_NAME:
-                        $this->executeHandlers(self::MEMBER_CHANGED_NAME, $this->parseMemberNameChangeMessage());
+                    case self::MEMBER_REMOVED:
+                        $this->executeHandlers(self::MEMBER_REMOVED, $this->parseMemberRemovedMessage());
                         break;
                     case self::OFFICE_MODE_CHANGED:
                         $this->executeHandlers(self::OFFICE_MODE_CHANGED, $this->parseOfficeModeChangeMessage());
                         break;
-                    case self::EVENT_RSVP:
-                        $this->executeHandlers(self::EVENT_RSVP, $this->parseEventRSVPMessage());
-                        break;
-                    case self::EVENT_CHANGED:
-                        $this->executeHandlers(self::EVENT_CHANGED, $this->parseEventChangedMessage());
-                        break;
-                    case self::EVENT_CANCELED:
-                        $this->executeHandlers(self::EVENT_CANCELED, $this->parseEventCanceledMessage());
-                        break;
                     default:
-                        //$this->sendMessage($this->getSystemMessageType());
+                        $this->logger->warning(sprintf("[EventBot] Did not understand system message: %s", ""));
                         return;
                 }
             }
             else {
+                $this->executeHandlers(self::MESSAGE, $this->parseMessage());
             }
 	}
 
@@ -86,8 +88,10 @@ abstract class EventBot extends BaseBot {
         }
 
         private function executeHandlers($event, $data) {
-            foreach ($this->handlers[$event] as $function) {
-                call_user_func($function, $data);
+            if (sizeof($this->handlers) > 0 && sizeof($this->handlers[$event]) > 0) {
+                foreach ($this->handlers[$event] as $function) {
+                    call_user_func($function, $data);
+                }
             }
         }
 
@@ -207,6 +211,15 @@ abstract class EventBot extends BaseBot {
             return $data;
         }
 
+        private function parseMessage() {
+            $data = array(
+                "event" => self::MESSAGE,
+                "who" => $this->getMemberByID($this->getPayload()['sender_id']),
+                "what" => $this->getMessage()
+            );
+            return $data;
+        }
+
         private function getSystemMessageType() {
             $message =  $this->getMessage();
             foreach ($this->events as $type => $regex) {
@@ -214,7 +227,7 @@ abstract class EventBot extends BaseBot {
                     return $type;
                 }
             }
-            return "unknown_event";
+            return self::UNKNOWN;
         }
 }
 ?>
