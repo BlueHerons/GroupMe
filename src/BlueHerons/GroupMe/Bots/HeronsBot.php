@@ -8,6 +8,7 @@ class HeronsBot extends CommandBot {
 
     public function __construct($token, $bot_id) {
         parent::__construct($token, $bot_id);
+        $this->registerCommand("broadcast",  array($this, "broadcast"),         "Broadcast a message");
         $this->registerCommand("checkpoint", array($this, "next_checkpoint"),   "Show next checkpoint");
         $this->registerCommand("cycle",      array($this, "next_cycle"),        "Show next cycle");
         $this->registerCommand("lessons",    array($this, "smurfling_lessons"), "Smurfling Lessons link");
@@ -15,6 +16,17 @@ class HeronsBot extends CommandBot {
         // button should only be registered if configured
         if (isset($this->config->button)) {
             $this->registerCommand("button", array($this, "smash_button"), "Button link");
+        }
+    }
+
+    public function broadcast() {
+        if ($this->isAdmin($this->getPayload()['sender_id'])) {
+            $message= implode(" ", array_slice(func_get_args(), 1));
+            $message = sprintf("[NETWORK BROADCAST FROM %s]\n\n%s", strtoupper($this->getPayload()['name']), $message);
+            $this->sendBroadcast($message);
+        }
+        else {
+            $this->replyToSender("Sorry, but only admins can use the \"broadcast\" command.");
         }
     }
 
@@ -40,6 +52,5 @@ class HeronsBot extends CommandBot {
     public function smurfling_lessons() {
         return sprintf("Smurfling lessons can be found at %s. These infographics are a great supplement to in-game training.", "http://blueheronsresistance.com/guide/lessons");
     }
-
 }
 ?>

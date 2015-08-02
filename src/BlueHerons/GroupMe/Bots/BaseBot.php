@@ -28,7 +28,7 @@ abstract class BaseBot {
 
         $this->logger = new Logger(self::LOG_DIR, LogLevel::DEBUG, array(
             "extension" => "log",
-            "logFormat" => "[" . $bot_id . " - {date}] [{level}] {message}"
+            "logFormat" => "[" . substr($bot_id, 0, 6) . " - {date}] [{level}] {message}"
         ));
 
         $this->token = $token;
@@ -52,8 +52,6 @@ abstract class BaseBot {
                     "blacklist" => array()
                 );
             }
-
-            unset($this->gconfig->bots);
         }
         else {
             $this->logger->debug("Config file doesnt exist");
@@ -204,6 +202,30 @@ abstract class BaseBot {
     }
 
     /**
+     * Broadcasts the same message to ALL groups that have a bot created by the token account
+     *
+     * @param string $message the message to send
+     */
+    protected function sendBroadcast($message) {
+        $bots = json_decode($this->gm->bots->index());
+        if ($bots->meta->code != 200) {
+            $this->logger->error(sprintf("Error getting bots from GM API: %s", print_r($bots->meta, true)));
+            return;
+        }
+        foreach ($bots->response as $bot) {
+            if (isset($this->gconfig->bots->{$bot->bot_id}) &&
+                isset($this->gconfig->bots->{$bot->bot_id}->broadcast) &&
+                $this->gconfig->bots->{$bot->bot_id}->broadcast) {
+                $this->sendGroupMessage($message, $bot->group_id);
+                $this->logger->info(sprintf("Broadcast sent to %s.", substr($bot->bot_id, 0, 6)));
+            }
+            else {
+                $this->logger->info(sprintf("%s not configured for broadcast", substr($bot->bot_id, 0, 6)));
+            }
+        }
+    }
+
+    /**
      * Sends a message to the same group that triggered the bot. The account who's $token is used
      * must be a member of that group for this to work.
      *
@@ -233,6 +255,19 @@ abstract class BaseBot {
             $this->getMentions($msg)
         ));
         $this->logger->debug(print_r($result, true));
+    }
+
+    /**
+     * Sends a direct message to the user that triggered the bot.
+     *
+     * @param string $message
+     */
+    protected function replyToSender($message) {
+        $this->logger->debug(sprintf("Replying to sender with message: %s", $message));
+        $this->gm->directmessages->create(array(
+            "source_guid" => uniqid(),
+            "recipient_id" => $this->getPayload()['sender_id'],
+            "text" => $message));
     }
 
     /**
