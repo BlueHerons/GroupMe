@@ -28,7 +28,7 @@ abstract class BaseBot {
 
         $this->logger = new Logger(self::LOG_DIR, LogLevel::DEBUG, array(
             "extension" => "log",
-            "logFormat" => "[{date} - " . $bot_id . "] [{level}] {message}"
+            "logFormat" => "[" . $bot_id . " - {date}] [{level}] {message}"
         ));
 
         $this->token = $token;
