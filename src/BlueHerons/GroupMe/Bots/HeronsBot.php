@@ -8,8 +8,8 @@ class HeronsBot extends CommandBot {
 
     public function __construct($token, $bot_id) {
         parent::__construct($token, $bot_id);
-        $this->registerCommand("checkpoint", array($this, "next_checkpoint"),   "Show next cycle");
-        $this->registerCommand("cycle",      array($this, "next_cycle"),        "Show next checkpoint");
+        $this->registerCommand("checkpoint", array($this, "next_checkpoint"),   "Show next checkpoint");
+        $this->registerCommand("cycle",      array($this, "next_cycle"),        "Show next cycle");
         $this->registerCommand("lessons",    array($this, "smurfling_lessons"), "Smurfling Lessons link");
 
         // button should only be registered if configured
