@@ -26,6 +26,9 @@ abstract class CommandBot extends EventBot {
                 }
             }
         }
+        else {
+            parent::listen();
+        }
     }
 
     private function ignoreUser() {
