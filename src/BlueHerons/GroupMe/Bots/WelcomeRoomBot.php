@@ -1,7 +1,7 @@
 <?php
 namespace BlueHerons\GroupMe\Bots;
 
-class WelcomeRoomBot extends EventBot {
+class WelcomeRoomBot extends HeronsBot {
 
     public function __construct($token, $bot_id) {
         parent::__construct($token, $bot_id);

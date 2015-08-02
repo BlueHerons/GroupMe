@@ -4,7 +4,7 @@ namespace BlueHerons\GroupMe\Bots;
 use \BlueHerons\Cycle\Cycle;
 use \DateTime;
 
-abstract class HeronsBot extends CommandBot {
+class HeronsBot extends CommandBot {
 
     public function __construct($token, $bot_id) {
         parent::__construct($token, $bot_id);

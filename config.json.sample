@@ -1,1 +1,17 @@
-{}
+{
+    "admin": [
+        "user_ids of bot admins"
+    ],
+    "token": "GroupMe API Token",
+    "bots": {
+        "Listener Bot ID": {
+            "bot": "Fully quailified class name of the bot",
+            "mods": [
+                "user_ids of bot moderators"
+            ],
+            "blacklist": [
+                "user_ids of blacklisted users"
+            ]
+        }
+    }
+}

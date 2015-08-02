@@ -4,20 +4,20 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "cc2b27af26998b1481855a1d0c4ed85f",
+    "hash": "ff189ddba38df6d4140eb952e2c7161a",
     "packages": [
         {
             "name": "katzgrau/klogger",
-            "version": "1.0.0",
+            "version": "dev-master",
             "source": {
                 "type": "git",
-                "url": "https://github.com/katzgrau/klogger.git",
-                "reference": "46cdd92a9b4a8443120cc955bf831450cb274813"
+                "url": "https://github.com/katzgrau/KLogger.git",
+                "reference": "6e530b7c0579c69488fabbff9f307d2d2591039e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/katzgrau/klogger/zipball/46cdd92a9b4a8443120cc955bf831450cb274813",
-                "reference": "46cdd92a9b4a8443120cc955bf831450cb274813",
+                "url": "https://api.github.com/repos/katzgrau/KLogger/zipball/6e530b7c0579c69488fabbff9f307d2d2591039e",
+                "reference": "6e530b7c0579c69488fabbff9f307d2d2591039e",
                 "shasum": ""
             },
             "require": {
@@ -36,27 +36,28 @@
                     "src/"
                 ]
             },
-            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
             "authors": [
                 {
-                    "name": "Dan Horrigan",
-                    "email": "dan@dhorrigan.com",
-                    "homepage": "http://dhorrigan.com",
-                    "role": "Lead Developer"
-                },
-                {
                     "name": "Kenny Katzgrau",
                     "email": "katzgrau@gmail.com"
+                },
+                {
+                    "name": "Dan Horrigan",
+                    "email": "dan@dhorrigan.com"
                 }
             ],
             "description": "A Simple Logging Class",
             "keywords": [
                 "logging"
             ],
-            "time": "2014-03-20 02:36:36"
+            "support": {
+                "source": "https://github.com/katzgrau/KLogger/tree/develop",
+                "issues": "https://github.com/katzgrau/KLogger/issues"
+            },
+            "time": "2015-04-27 14:06:51"
         },
         {
             "name": "php-curl-class/php-curl-class",
@@ -191,6 +192,7 @@
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
+        "katzgrau/klogger": 20,
         "zzbomb/groupme": 20
     },
     "prefer-stable": false,
