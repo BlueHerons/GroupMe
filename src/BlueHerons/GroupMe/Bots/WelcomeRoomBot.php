@@ -15,8 +15,8 @@ class WelcomeRoomBot extends HeronsBot {
 
     public function onGroupChanged($data) {
         if ($data['change'] == "avatar" && $data['who']->user_id != $this->getUserID()) {
-            $this->sendMessage(sprintf("@%s, I think you meant to change your personal avatar, not the group avatar, so I will put the old image back. To change your personal avatar, check out <url>", $data['who']->nickname));
-            $this->changeGroupImage("https://camo.githubusercontent.com/222c6a021b280859b439c4e69ca6c05ef28c85fe/687474703a2f2f6d6164656972612e686363616e65742e6f72672f70726f6a656374322f6d696368656c735f70322f77656273697465253230706963732f62656e6465722e6a7067");
+            $this->sendMessage(sprintf("@%s, I think you meant to change your personal avatar, not the group avatar, so I will put the old image back.", $data['who']->nickname));
+            $this->changeGroupImage("http://i.groupme.com/960x877.png.3a4569dc0a734a1da5d5090390e0d83c");
         }
     }
 
