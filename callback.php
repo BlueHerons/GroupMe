@@ -5,13 +5,15 @@ $payload = json_decode(file_get_contents("php://input"));
 $bot_id = $_GET['bot'];
 
 if (empty($payload) || empty($bot_id)) {
-    die("No data");
+    error_log("[GM Bot Callback] No data.");
+    exit(1);
 }
 
 $config = json_decode(file_get_contents("config.json"));
 
 if (!isset($config->bots->{$bot_id})) {
-    die("Invalid bot id.");
+    error_log("[GM Bot Callback] Invalid bot id.");
+    exit(1);
 }
 
 $global_config = $config;
