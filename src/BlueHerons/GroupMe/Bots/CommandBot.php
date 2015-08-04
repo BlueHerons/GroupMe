@@ -39,11 +39,11 @@ abstract class CommandBot extends EventBot {
                 return sprintf("I'm sorry, @%s. I'm afraid I can't do that.", $args[0]['name']);
             }
             else {
-                $id = is_numeric($user) ? $id : $this->searchMemberByName($user)->user_id;
+                $id = is_numeric($user) ? $user : $this->searchMemberByName($user)->user_id;
                 $name = $this->getMemberByID($id)->nickname;
 
                 $this->addToBlacklist($id);
-                $this->logger->info(sprintf("%s (%s) was added to the blacklist by %s", $name, $id, $args[0]['sender_id']));
+                $this->logger->info(sprintf("%s (%s) was added to the blacklist by %s", $name, $id, $this->getMemberByID($args[0]['sender_id'])->nickname));
                 return sprintf("I will ignore commands from @%s.", $name);
             }
         }
@@ -53,10 +53,10 @@ abstract class CommandBot extends EventBot {
         $args = func_get_args();
         if (count($args) >= 2) {
             $user = implode(" ", array_slice($args, 1));
-            $id = is_numeric($user) ? $id : $this->searchMemberByName($user)->user_id;
-            $name = is_numeric($user) ? $this->getMemberByID($user)->nickname : $user;
+            $id = is_numeric($user) ? $user : $this->searchMemberByName($user)->user_id;
+            $name = $this->getMemberByID($id)->nickname;
             $this->removeFromBlacklist($id);
-            $this->logger->info(sprintf("%s (%s) was removed from the blacklist by %s", $name, $id, $args[0]['sender_id']));
+            $this->logger->info(sprintf("%s (%s) was removed from the blacklist by %s", $name, $id, $this->getMemberByID($args[0]['sender_id'])->nickname));
             return sprintf("I will acknowledge commands from @%s.", $name);
         }
     }
