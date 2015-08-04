@@ -14,7 +14,6 @@ class HeronsBot extends CommandBot {
         $this->registerCommand("checkpoint", array($this, "next_checkpoint"),   "Show next checkpoint");
         $this->registerCommand("cycle",      array($this, "next_cycle"),        "Show next cycle");
         $this->registerCommand("lessons",    array($this, "smurfling_lessons"), "Smurfling Lessons link");
-        $this->registerCommand("whois",      array($this, "whois"),             "Show user info");
 
         // button should only be registered if configured
         if (isset($this->config->button)) {
