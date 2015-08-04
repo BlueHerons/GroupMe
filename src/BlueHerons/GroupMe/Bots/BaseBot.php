@@ -264,6 +264,7 @@ abstract class BaseBot {
      */
     protected function replyToSender($message) {
         $this->logger->debug(sprintf("Replying to sender with message: %s", $message));
+        $message = sprintf("[%s] %s", $this->getGroupInfo()->name, $message);
         $this->gm->directmessages->create(array(
             "source_guid" => uniqid(),
             "recipient_id" => $this->getPayload()['sender_id'],
@@ -438,6 +439,15 @@ abstract class BaseBot {
         $img = $this->gm->images->pictures($image_url);
         $img = json_decode($img)->payload;
         $this->gm->groups->update($this->getGroupID(), array("image_url" => $img->url));
+    }
+
+    /**
+     * Change the name of the token account in the group
+     *
+     * @param string $name name to change to
+     */
+    protected function changeName($name) {
+        $this->gm->members->update($this->getGroupID(), $name);
     }
 }
 ?>
