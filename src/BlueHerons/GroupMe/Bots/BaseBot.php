@@ -95,7 +95,12 @@ abstract class BaseBot {
         $id = is_numeric($user) ?
                 $user :
                 $this->searchMemberByName($user)->user_id;
-        return in_array($id, $this->config->mods);
+        if (sizeof($this->config->mods) == 0) {
+            return true;
+        }
+        else {
+            return in_array($id, $this->config->mods);
+        }
     }
 
     /**
