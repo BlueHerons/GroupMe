@@ -92,23 +92,24 @@ abstract class CommandBot extends EventBot {
     }
 
     public function executeCommand($command, $params = array()) {
-        return call_user_func_array($this->commands[$command][0], array_merge(array("payload" => $this->getPayload()), $params));
+        return call_user_func_array($this->commands[strtolower($command)][0], array_merge(array("payload" => $this->getPayload()), $params));
     }
 
     protected function getCommand() {
         $cmd = str_replace(self::COMMAND_CHAR, "", $this->getMessage());
         $cmd = str_replace(self::COMMAND_CHAR, "", explode(" ", $cmd)[0]);
-        return strtolower($cmd);
+        return $cmd;
     }
 
     protected function getParams() {
         $params = str_replace(self::COMMAND_CHAR, "", $this->getMessage());
         $params = str_replace($this->getCommand(), "", $params);
-        return array_values(array_filter(explode(" ", $params)));
+        $params = array_values(array_filter(explode(" ", $params)));
+        return $params;
     }
 
     protected function isRegisteredCommand($command) {
-        return array_key_exists($command, $this->commands);
+        return array_key_exists(strtolower($command), $this->commands);
     }
 
     protected function isCommandMessage() {
