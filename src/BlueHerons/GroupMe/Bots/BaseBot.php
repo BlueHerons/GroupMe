@@ -357,12 +357,39 @@ abstract class BaseBot {
      * @return mixed member object if found, or false
      */
     protected function searchMemberByName($partial_name) {
+        // Exact Match search
+        foreach ($this->getGroupMembers() as $member) {
+            if (strtolower($member->nickname) === strtolower($partial_name)) {
+                $this->logger->debug(sprintf("Found user '%s' searching for '%s'", $member->nickname, $partial_name));
+                return $member;
+            }
+        }
+
+        // "Starts With"  search
+        foreach ($this->getGroupMembers() as $member) {
+            if (strrpos($member->nickname, $partial_name, -strlen($member->nickname)) !== FALSE) {
+                $this->logger->debug(sprintf("Found user '%s' searching for '%s'", $member->nickname, $partial_name));
+                return $member;
+            }
+        }
+
+        // case-sensitive "contains" search
+        foreach ($this->getGroupMembers() as $member) {
+            if (strpos($member->nickname, $partial_name) !== false) {
+                $this->logger->debug(sprintf("Found user '%s' searching for '%s'", $member->nickname, $partial_name));
+                return $member;
+            }
+        }
+
+        // case-insensitive "contains" search
         foreach ($this->getGroupMembers() as $member) {
             if (stripos($member->nickname, $partial_name) !== false) {
                 $this->logger->debug(sprintf("Found user '%s' searching for '%s'", $member->nickname, $partial_name));
                 return $member;
             }
         }
+
+
         return $this->BOGUS_GROUPME_USER;
     }
 
