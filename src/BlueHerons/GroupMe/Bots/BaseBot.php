@@ -284,6 +284,9 @@ abstract class BaseBot {
         if (isset($this->payload) && isset($this->payload['group_id'])) {
             $group_id = $this->payload['group_id'];
         }
+        else if (isset($this->group_id)) {
+            $group_id = $this->group_id;
+        }
         else {
             throw new \Exception("Group ID unavailable");
         }
