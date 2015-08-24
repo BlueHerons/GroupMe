@@ -19,6 +19,11 @@ class HeronsBot extends CommandBot {
         if (isset($this->config->button)) {
             $this->registerCommand("button", array($this, "smash_button"), "Button link");
         }
+
+        // rules should only be registered if configured
+        if (isset($this->config->rules)) {
+            $this->registerCommand("rules", array($this, "rules"), "Show chat rules");
+        }
     }
 
     public function broadcast() {
@@ -101,6 +106,11 @@ class HeronsBot extends CommandBot {
         return sprintf("Next septicycle starts on %s. (%s)",
                        $next->format("l, F j \a\\t g A"),
                        $next->diff(new DateTime())->format("%d days, %h hours, %i mins"));
+    }
+
+    public function rules() {
+        $rules = $this->config->rules;
+        return $rules;
     }
 
     public function smash_button() {
