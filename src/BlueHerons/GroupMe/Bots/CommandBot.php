@@ -10,6 +10,7 @@ abstract class CommandBot extends EventBot {
         $this->registerCommand("help",   array($this, "listCommands"),    "Show available commands");
         $this->registerCommand("ignore", array($this, "ignoreUser"),      "Ignore the specified user");
         $this->registerCommand("ack",    array($this, "acknowledgeUser"), "Acknowledge the specified user");
+        $this->registerCommand("about",   array($this, "about"),          "Show info about this bot");
     }
 
     private $commands = array();
@@ -29,6 +30,12 @@ abstract class CommandBot extends EventBot {
         else {
             parent::listen();
         }
+    }
+
+    private function about() {
+        $commitsh = substr(`git rev-parse HEAD`, 0, 8);
+        $bot = array_pop(explode("\\", $this->config->bot));
+        return sprintf("%s [%s]", $bot, $commitsh);
     }
 
     private function ignoreUser() {
