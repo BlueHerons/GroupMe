@@ -268,11 +268,21 @@ abstract class BaseBot {
      * @param string $message
      */
     protected function replyToSender($message) {
-        $this->logger->debug(sprintf("Replying to sender with message: %s", $message));
+        $this->sendDirectMessage($this->getPayload()['sender_id'], $message);
+    }
+
+    /**
+     * Sends a direct message to the user.
+     *
+     * @param string $user_id
+     * @param string $message
+     */
+    protected function sendDirectMessage($user_id, $message) {
+        $this->logger->debug(sprintf("Sending %s a message: %s", $user_id, $message));
         $message = sprintf("[%s] %s", $this->getGroupInfo()->name, $message);
         $this->gm->directmessages->create(array(
             "source_guid" => uniqid(),
-            "recipient_id" => $this->getPayload()['sender_id'],
+            "recipient_id" => $user_id,
             "text" => $message));
     }
 

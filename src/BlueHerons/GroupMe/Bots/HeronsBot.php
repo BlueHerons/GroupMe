@@ -4,6 +4,7 @@ namespace BlueHerons\GroupMe\Bots;
 use \BlueHerons\Cycle\Cycle;
 use \DateTime;
 use \ReflectionClass;
+use \stdClass;
 
 class HeronsBot extends CommandBot {
 
@@ -24,6 +25,38 @@ class HeronsBot extends CommandBot {
         if (isset($this->config->rules)) {
             $this->registerCommand("rules", array($this, "rules"), "Show chat rules");
         }
+
+        // alertme should only be registered if configured
+        if (isset($this->config->alert)) {
+            $this->registerCommand("alertme", array($this, "alertme"), "Send name change alerts via PM");
+            $this->registerHandler(self::GROUP_CHANGED, function($data) {
+                if ($data['change'] == "name" && is_object($this->config->alert)) {
+                    if (preg_match($this->config->alert->regex, $data['what'])) {
+                        foreach ($this->config->alert->users as $user) {
+                            $this->sendDirectMessage($user, $data['what']);
+                        }
+                        $this->sendMessage(sprintf("%d people have been alerted to the group name change.", sizeof($this->config->alert->users)));
+                    }
+                }
+            });
+        }
+    }
+
+    public function alertme() {
+        if (!is_object($this->config->alert)) {
+            $this->config->alert = new stdClass();
+            $this->config->alert->regex = "/^$/";
+            $this->config->alert->users = array();
+            $this->saveConfig();
+        }
+
+        if (!is_array($this->config->alert->users)) {
+            $this->config->alert->users = array();
+        }
+
+        array_push($this->config->alert->users, $this->getPayload()['sender_id']);
+        $this->replyToSender("You will receive group name change alerts via direct message.");
+        $this->saveConfig();
     }
 
     public function broadcast() {
