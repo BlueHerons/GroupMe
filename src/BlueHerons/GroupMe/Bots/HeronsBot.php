@@ -54,9 +54,14 @@ class HeronsBot extends CommandBot {
             $this->config->alert->users = array();
         }
 
-        array_push($this->config->alert->users, $this->getPayload()['sender_id']);
-        $this->replyToSender("You will receive group name change alerts via direct message.");
-        $this->saveConfig();
+        if (!in_array($this->getPayload()['sender_id'], $this->config->alert->users)) {
+            array_push($this->config->alert->users, $this->getPayload()['sender_id']);
+            $this->replyToSender("You will receive group name change alerts via direct message.");
+            $this->saveConfig();
+        }
+        else {
+            $this->replyToSender("You have already opted-in to receiving alerts for this group.");
+        }
     }
 
     public function broadcast() {
