@@ -23,8 +23,9 @@ FORM =
    Nomination: [a name we can recognize]{area they play in, or tag those that have also met}
 
 !!!  Any adds by non-mods will be removed  !!");
-        $this->sendMessage("Guideline for posting:  Let's keep the plane SFW.  If you're not sure if it is SFW, maybe share it not in the plane, but somewhere else.");
-        $this->sendMessage("MODERATORS
+        $this->sendMessage("Guideline for posting:  Let's keep the plane SFW.  If you're not sure if it is SFW, maybe share it not in the plane, but some where else.
+
+MODERATORS
 ----------
 Christyan (onlineannoyance)
 John (CaptCynicism)
