@@ -494,5 +494,13 @@ abstract class BaseBot {
     protected function changeName($name) {
         $this->gm->members->update($this->getGroupID(), $name);
     }
+
+    protected function removeMember($id) {
+        foreach ($this->getGroupMembers() as $member) {
+            if ($member->user_id == $id) {
+                $this->gm->members->remove($this->getGroupID(), $member->id);
+            }
+        }   
+    }
 }
 ?>
