@@ -22,7 +22,7 @@ abstract class EventBot extends BaseBot {
             self::EVENT_CHANGED             => "/^(.*)( updated the (description|image url|name) for the event )'(.*)'$/",
             self::EVENT_RSVP                => "/^(.*)(is (going|not going) to )'(.*)'$/",
             self::GROUP_CHANGED             => "/^(.*)( changed the ((topic) to:|group's (name) to|group's (avatar)) ?)(.*)?$/",
-            self::MEMBER_ADDED              => "/^(.*)( added )(.*)( to the group)$/",
+            self::MEMBER_ADDED              => "/^(.*)( added )(.*)( to the group\.)$/",
             self::MEMBER_CHANGED_NAME       => "/^(.*)( changed name to )(.*)$/",
             self::MEMBER_JOINED             => "/^(.*)( has joined the group)$/",
             self::MEMBER_LEFT               => "/^(.*)( has left the group\.)$/",
@@ -74,7 +74,7 @@ abstract class EventBot extends BaseBot {
                         $this->executeHandlers(self::OFFICE_MODE_CHANGED, $this->parseOfficeModeChangeMessage());
                         break;
                     default:
-                        $this->logger->warning(sprintf("[EventBot] Did not understand system message: %s", ""));
+                        $this->logger->warning(sprintf("[EventBot] Did not understand system message: %s", print_r($this->getPayload(), true)));
                         return;
                 }
             }
