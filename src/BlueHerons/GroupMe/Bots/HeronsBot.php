@@ -10,6 +10,11 @@ class HeronsBot extends CommandBot {
 
     public function __construct($token, $bot_id) {
         parent::__construct($token, $bot_id);
+
+        $this->registerHandler(EventBot::MEMBER_ADDED, array($this, "checkForAutoKick"));
+        $this->registerHandler(EventBot::MEMBER_JOINED, array($this, "checkForAutoKick"));
+        $this->registerHandler(EventBot::MEMBER_REJOINED, array($this, "checkForAutoKick"));
+
         $this->registerCommand("broadcast",  array($this, "broadcast"),         "Broadcast a message");
         $this->registerCommand("config",     array($this, "config"),            "Shows or sets bot configuration");
         $this->registerCommand("checkpoint", array($this, "next_checkpoint"),   "Show next checkpoint");
@@ -74,6 +79,17 @@ class HeronsBot extends CommandBot {
             $this->replyToSender("Sorry, but only admins can use the \"broadcast\" command.");
         }
     }
+
+    public function checkForAutoKick($data) {
+        $this->logger->info(sprintf("Checking %s (%s) for auto-kick", $data['who']->nickname, $data['who']->user_id));
+        if (isset($this->config->autokick) && is_array($this->config->autokick)) {
+            if (in_array($data['who']->user_id, $this->gconfig->autokick)) {
+                $this->logger->info(sprintf("%s is marked for auto-kick", $data['who']->nickname));
+                $this->removeMember($data['who']->user_id);
+            }
+        }
+    }
+
 
     public function config() {
         $args = array_values(array_slice(func_get_args(), 1));

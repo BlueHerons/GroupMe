@@ -43,6 +43,10 @@ abstract class BaseBot {
 
             if (isset($config->bots->{$bot_id})) {
                 $this->config = $config->bots->{$bot_id};
+                $this->config->autokick = is_array($this->config->autokick) ? 
+                    $this->config->autokick :
+                    array();
+                $this->config->autokick = array_unique(array_merge($this->config->autokick, $this->gconfig->autokick));
             }
             else {
                 $this->logger->debug("No configuration for " . $bot_id);
@@ -499,6 +503,7 @@ abstract class BaseBot {
         foreach ($this->getGroupMembers() as $member) {
             if ($member->user_id == $id) {
                 $this->gm->members->remove($this->getGroupID(), $member->id);
+                $this->logger->info(sprintf("%s was removed from %s", $member->nickname, $this->getGroupInfo()->name));
             }
         }   
     }
