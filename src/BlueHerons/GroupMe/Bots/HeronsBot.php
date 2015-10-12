@@ -158,6 +158,8 @@ class HeronsBot extends CommandBot {
             $this->logger->info(sprintf("%s (%s) is not a mod, cannot add new members", $data['by']->nickname, $data['by']->user_id));
             $this->removeMember($data['who']->user_id);
             $this->sendMessage("I'm sorry, but this chat only allows Mods to add new members.");
+            // Die to prevent other handlers
+            die();
         }
     }
 
