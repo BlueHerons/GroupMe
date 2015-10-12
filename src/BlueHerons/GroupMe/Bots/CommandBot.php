@@ -98,6 +98,10 @@ abstract class CommandBot extends EventBot {
         $this->commands[$command] = array($function, $help);
     }
 
+    public function unregisterCommand($command) {
+        unset($this->commands[$command]);
+    }
+
     public function executeCommand($command, $params = array()) {
         return call_user_func_array($this->commands[strtolower($command)][0], array_merge(array("payload" => $this->getPayload()), $params));
     }
