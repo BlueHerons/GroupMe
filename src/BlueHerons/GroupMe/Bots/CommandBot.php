@@ -10,7 +10,7 @@ abstract class CommandBot extends EventBot {
         $this->registerCommand("help",   array($this, "listCommands"),    "Show available commands");
         $this->registerCommand("ignore", array($this, "ignoreUser"),      "Ignore the specified user");
         $this->registerCommand("ack",    array($this, "acknowledgeUser"), "Acknowledge the specified user");
-        $this->registerCommand("about",   array($this, "about"),          "Show info about this bot");
+        $this->registerCommand("info",   array($this, "info"),            "Show info");
     }
 
     private $commands = array();
@@ -32,10 +32,16 @@ abstract class CommandBot extends EventBot {
         }
     }
 
-    private function about() {
+    private function info() {
         $commitsh = substr(`git rev-parse HEAD`, 0, 8);
         $bot = array_pop(explode("\\", $this->config->bot));
-        return sprintf("%s [%s]", $bot, $commitsh);
+        $message  = sprintf("Group..... : %s (ID: %s)\n", $this->getGroupInfo()->name, $this->getGroupInfo()->group_id);
+        $message .= sprintf("Bot....... : %s (%s)\n", $bot, $commitsh);
+        $message .= sprintf("Capacity.. : %s / %s\n", sizeof($this->getGroupInfo()->members), $this->getGroupInfo()->max_members);
+        $message .= sprintf("Created On : %s\n", date("Y-m-d", $this->getGroupInfo()->created_at));
+        $message .= sprintf("Created By : %s\n", $this->getMemberByID($this->getGroupInfo()->creator_user_id)->nickname);
+
+        return $message;
     }
 
     private function ignoreUser() {
@@ -84,7 +90,7 @@ abstract class CommandBot extends EventBot {
         foreach ($commands as $c => $d) {
             $msg .= $c;
             for($i = 0; $i < $max_cmd_length - strlen($c); $i++) {
-                $msg .= " ";
+                $msg .= ".";
             }
             $msg .= " => ";
             $msg .= $d;
