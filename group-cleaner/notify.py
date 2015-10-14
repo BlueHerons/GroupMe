@@ -32,19 +32,6 @@ import logging
 import os
 import pickle
 
-SCRIPTDIR = os.path.dirname(os.path.realpath(__file__))
-DATADIR = SCRIPTDIR + '/data'
-os.makedirs(DATADIR + '/logs', mode = 0o777, exist_ok = True)
-
-LOG = logging.getLogger('notify')
-LOG.setLevel(logging.DEBUG)
-ch = logging.StreamHandler()
-ch.setLevel(logging.DEBUG)
-ch.setFormatter(logging.Formatter('%(levelname)s - %(message)s'))
-LOG.addHandler(ch)
-
-now =  datetime.now()
-
 parser = argparse.ArgumentParser(
         description="Notify a GroupMe group's inactive members that they may be removed.")
 parser.add_argument('group_id', 
@@ -61,7 +48,17 @@ parser.add_argument('--deadline_days',
 parser.add_argument("--for_realz",
         action='store_true',
         help='Really send notifications')
-args = parser.parse_args()
+
+SCRIPTDIR = os.path.dirname(os.path.realpath(__file__))
+DATADIR = SCRIPTDIR + '/data'
+
+LOG = logging.getLogger('notify')
+LOG.setLevel(logging.DEBUG)
+
+PING_MESSAGE = ('I noticed you have not been active in {0} over the past {1} days. '
+                'Please heart this post in the next {2} days if you still want to '
+                'be in this group.  If not, you do not have to do anything and will '
+                'be removed after that time.')
 
 """Find the group object given a group ID"""
 def findGroupFromID(group_id, group_class = groupy.Group):
@@ -140,11 +137,6 @@ def getInactiveMembers(status):
     return inactive
 
 
-PING_MESSAGE = ('I noticed you have not been active in {0} over the past {1} days. '
-                'Please heart this post in the next {2} days if you still want to '
-                'be in this group.  If not, you do not have to do anything and will '
-                'be removed after that time.')
-
 """Ping the inactive members"""
 def pingInactiveMembers(status, group, inactive, deadline, msg = PING_MESSAGE):
     for m in getInactiveMembers(status):
@@ -153,43 +145,59 @@ def pingInactiveMembers(status, group, inactive, deadline, msg = PING_MESSAGE):
             )
         )
         message = m.post(msg.format(group.name, inactive, deadline))
-        message_id = message[0]['direct_messages']['id']
+        message_id = message[0]['direct_message']['id']
         status[m.user_id]['message_id'] = message_id
 
 
-#
-# Main program
-#
+"""Main program"""
+def main(args):
 
-target_group = findGroupFromID(args.group_id)
-if target_group:
-    GROUPDIR = DATADIR + '/' + target_group.group_id
-    GROUPLINK = DATADIR + '/' + target_group.name
-    os.makedirs(GROUPDIR, mode = 0o777, exist_ok = True)
-    if os.path.exists(GROUPLINK):
-        os.unlink(GROUPLINK)
-    os.symlink(GROUPDIR, GROUPLINK)
-else:
-    LOG.error('Could not find group ID {0}'.format(args.group_id))
-    sys.exit(0)
+    os.makedirs(DATADIR + '/logs', mode = 0o777, exist_ok = True)
+    
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.DEBUG)
+    ch.setFormatter(logging.Formatter('%(levelname)s - %(message)s'))
+    LOG.addHandler(ch)
+    
+    fh = logging.FileHandler(DATADIR + "/logs/notify.log")
+    fh.setLevel(logging.DEBUG)
+    fh.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+    LOG.addHandler(fh)
+    
+    now =  datetime.now()
+    
+    target_group = findGroupFromID(args.group_id)
+    if target_group:
+        groupdir = DATADIR + '/' + target_group.group_id
+        grouplink = DATADIR + '/' + target_group.name
+        os.makedirs(groupdir, mode = 0o777, exist_ok = True)
+        if os.path.exists(grouplink):
+            os.unlink(grouplink)
+        os.symlink(groupdir, grouplink)
+    else:
+        LOG.error('Could not find group ID {0}'.format(args.group_id))
+        sys.exit(0)
+    
+    LOG.info("Getting membership and reading {0} days of messages...".format(args.inactive_days))
+    
+    inactive_datetime = now - timedelta(args.inactive_days)
+    deadline_datetime = now + timedelta(args.deadline_days)
+    member_status = buildMemberStatusFromMessages(
+            target_group, 
+            inactive_datetime, 
+            deadline_datetime
+            )
+    
+    datafile = DATADIR + '/' + now.strftime('%Yi%m%d%H%M%S')
+    with open(datafile, 'wb') as f:
+        if args.for_realz:
+            pingInactiveMembers(member_status, target_group, inactive, deadline)
+    
+        LOG.info('Saving member status as {0}'.format(datafile))
+        pickle.dump(member_status, f)
 
-LOG.info("Getting membership and reading {0} days of messages...".format(args.inactive_days))
-
-inactive_datetime = now - timedelta(args.inactive_days)
-deadline_datetime = now + timedelta(args.deadline_days)
-member_status = buildMemberStatusFromMessages(
-        target_group, 
-        inactive_datetime, 
-        deadline_datetime
-        )
-
-DATAFILE = DATADIR + '/' + now.strftime('%Yi%m%d%H%M%S')
-with open(DATAFILE, 'wb') as f:
-    if args.for_realz:
-        pingInactiveMembers(member_status, target_group, inactive, deadline)
-
-    LOG.info('Saving member status as {0}'.format(DATAFILE))
-    pickle.dump(member_status, f)
-
+if __name__ == "__main__":
+    args = parser.parse_args()
+    main(args)
 
 
