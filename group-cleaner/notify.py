@@ -183,7 +183,7 @@ member_status = buildMemberStatusFromMessages(
         deadline_datetime
         )
 
-DATAFILE = DATADIR + '/' + now.strftime('%Yi%m%d%H%M%S')
+DATAFILE = GROUPDIR + '/' + now.strftime('%Y%m%d%H%M%S')
 with open(DATAFILE, 'wb') as f:
     if args.for_realz:
         pingInactiveMembers(member_status, target_group, inactive, deadline)
