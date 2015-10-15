@@ -16,16 +16,14 @@ use Psr\Log\LogLevel;
 // IT IS IMPORTANT THAT THE BOT SENDS A REPLY, SO THAT THE "LAST MESSAGE SENDER ID" IS NOT THE USER
 // ID OF THE RECIEPENT OF THE DIRECT MESSAGE, ELSE THE SCRIPT WILL GET CAUGHT IN A LOOP
 
-// GroupMe API Token
-define("API_TOKEN", "");
-// GroupMe User ID to notify
-define("NOTIFY_ID", "");
 // Number of DMs to retrieve per execution
 define("DM_COUNT", 10);
 
+$config = json_decode(file_get_contents("config.json"));
+
 // This endpoint is undocumented in the GroupMe API. It was reverse engineered from the web client.
 // Only direct message conversations are returned.
-$url = "https://v2.groupme.com/chats?token=" . API_TOKEN . "&page=1&per_page=" . DM_COUNT;
+$url = "https://v2.groupme.com/chats?token=" . $config->token . "&page=1&per_page=" . DM_COUNT;
 
 $hndl = curl_init();
 curl_setopt($hndl, CURLOPT_URL, $url);
@@ -38,7 +36,7 @@ curl_close($hndl);
 $data = json_decode($result);
 
 // Use a GroupMe API client for documented API calls
-$gm = new GroupMePHP\groupme(API_TOKEN);
+$gm = new GroupMePHP\groupme($config->token);
 
 $logger = new Logger("logs", LogLevel::DEBUG, array(
     "extension" => "log",
@@ -64,11 +62,11 @@ foreach ($data->response->chats as $chat) {
             "text" => "I am a bot. I do not yet understand commands sent via direct message."
         ));
 
-        if (defined("NOTIFY_ID")) {
+        foreach($config->admin as $admin) {
            $gm->directmessages->create(array(
                "source_guid" => uniqid(),
-               "recipient_id" => NOTIFY_ID,
-               "text" => sprintf("[Bot PM Listener] %s sent a message: %s", $chat->other_user->name, $chat->last_message->text)
+               "recipient_id" => $admin,
+               "text" => sprintf("[Bot PM Listener] %s sent a message to the bot: %s", $chat->other_user->name, $chat->last_message->text)
            ));
         }
     }
