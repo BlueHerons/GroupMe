@@ -18,34 +18,11 @@ Logs are under data/logs
 import argparse
 from datetime import datetime
 from datetime import timedelta
-import glob
+from glob import glob
 import groupy  # https://github.com/rhgrant10/Groupy
 import logging
 import os
 import pickle
-
-logger = logging.getLogger('notify')
-logger.setLevel(logging.DEBUG)
-
-now =  datetime.now()
-
-scriptdir = os.path.dirname(os.path.abspath(__file__))
-datadir = scriptdir + '/data/'
-
-logfile = logging.FileHandler(datadir + "/logs/prune.log")
-console = logging.StreamHandler()
-
-logformat = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-logfile.setFormatter(logformat)
-
-conformat = logging.Formatter('%(levelname)s - %(message)s')
-logfile.setFormatter(conformat)
-
-logfile.setLevel(logging.DEBUG)
-console.setLevel(logging.DEBUG)
-
-logger.addHandler(logfile)
-logger.addHandler(console)
 
 parser = argparse.ArgumentParser(description = 'Remove inactive group members')
 parser.add_argument('data_file',
@@ -54,64 +31,119 @@ parser.add_argument('data_file',
 parser.add_argument('--for_realz',
                     action='store_true',
                     help='Really prune the group...')
-args = parser.parse_args()
+
+SCRIPTDIR = os.path.dirname(os.path.realpath(__file__))
+DATADIR = SCRIPTDIR + '/data'
+
+LOG = logging.getLogger('prune')
+LOG.setLevel(logging.DEBUG)
+
 
 """
 Given a data file name, return the most recent revision
 """
 def selectNewestDataFile(filename):
-  print(filename)
-  if not os.path.isfile(filename):
-    logger.error('{0} is not a file.'.format(filename))
-    
-  (head, tail) = os.path.split(filename)
-  prefix = tail[:14]
-
-  pattern = head + '/' + prefix + '*'
-  logger.debug('Getting all files matching {0}'.format(pattern))
-  dir_entries = glob.glob(pattern)
-  dir_entries.sort()
-
-  revision_name = head + '/' + dir_entries[-1]
-  logger.debug("Selecting {0} as the most recent data file version".format(revision_name))
-  return revision_name
+    print(filename)
+    if not os.path.isfile(filename):
+        LOG.error('{0} is not a file.'.format(filename))
+      
+    (head, tail) = os.path.split(filename)
+    prefix = tail[:14]
+  
+    pattern = head + '/' + prefix + '*'
+    LOG.debug('Getting all files matching {0}'.format(pattern))
+    dir_entries = glob(pattern)
+    dir_entries.sort()
+  
+    LOG.debug("Selecting {0} as the most recent data file version".format(dir_entries[-1]))
+    return dir_entries[-1]
 
 
 """
 Given a data file name return the next revision
 """
 def selectNextDataFile(filename):
-  (head, tail) = os.path.split(filename)
-  print(head, tail)
-  prefix = tail[:14]
-  if len(tail) > 14:
-    suffix = int(tail[15:])
-  else:
-    suffix = 0
-  
-  suffix += 1
-  
-  revison_name = head + '/' + prefix + '.' + str(suffix)
-  logger.debug("Selecting {0} as the next data file version".format(revison_name))
-  return revison_name
+    (head, tail) = os.path.split(filename)
+    prefix = tail[:14]
+    if len(tail) > 14:
+        suffix = int(tail[15:])
+    else:
+        suffix = 0
     
-#
-# Main program
-#
-filename = selectNewestDataFile(args.data_file)
-
-with open(filename, 'rb') as f:
-    member_status = pickle.load(f)
-
-print(member_status)
-
-filename = selectNextDataFile(filename)
+    suffix += 1
+    
+    revison_name = head + '/' + prefix + '.' + str(suffix)
+    LOG.debug("Selecting {0} as the next data file version".format(revison_name))
+    return revison_name
 
 
-# Save updated member status in a new file, named with the same YYYYMMDDHHMMSS
-# as the source file, but with an incremented number at the end.  So if the file
-# we read was 20150504123445 then the new file is 20150504123445.1, and if the
-# source file was .1 then the new file is .2
+"""Find the group object given a group ID"""
+def findGroupFromID(group_id, group_class = groupy.Group):
+    target_group = None
+    for g in group_class.list():
+        if g.group_id == group_id:
+            LOG.info('Found group id {0} "{1}"'.format(g.group_id, g.name))
+            target_group = g
+            break
+    if not target_group:
+        LOG.error('Could not find group id {0}'.format(group_id))
+    return target_group
+
+
+"""Get the group given the data file path"""
+def getGroupFromDataFilePath(path):
+    (head, tail) = os.path.split(path)
+    if os.path.islink(head):
+        head = os.readlink(head)
+    (head, group_id) = os.path.split(head)
+    
+    group = findGroupFromID(group_id)  
+    return group
+
+
+"""Main program"""
+def main(args):
+
+    os.makedirs(DATADIR + '/logs', mode = 0o777, exist_ok = True)
+    
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.DEBUG)
+    ch.setFormatter(logging.Formatter('%(levelname)s - %(message)s'))
+    LOG.addHandler(ch)
+    
+    fh = logging.FileHandler(DATADIR + "/logs/prune.log")
+    fh.setLevel(logging.DEBUG)
+    fh.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+    LOG.addHandler(fh)
+    
+    now =  datetime.now()
+    
+    group = getGroupFromDataFilePath(args.data_file)
+    
+    filename = selectNewestDataFile(args.data_file)
+    
+    with open(filename, 'rb') as f:
+        member_status = pickle.load(f)
+    
+    # TODO(ken): Load PMs and check for responses.  Return list of people to be removed
+    
+    # Save updated member status in a new file, named with the same YYYYMMDDHHMMSS
+    # as the source file, but with an incremented number at the end.  So if the file
+    # we read was 20150504123445 then the new file is 20150504123445.1, and if the
+    # source file was .1 then the new file is .2    
+    
+    filename = selectNextDataFile(filename)
+    with open(filename, 'wb') as f:
+        
+        # TODO(ken): Send message to group, to inactive members, and remove them
+        # TODO(ken): Remove them from status structure
+        
+        pickle.dump(member_status, f)
+    
+    
+if __name__ == "__main__":
+    args = parser.parse_args()
+    main(args)
 
 
 
