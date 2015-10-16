@@ -15,11 +15,16 @@ class HeronsBot extends CommandBot {
         $this->registerHandler(EventBot::MEMBER_JOINED, array($this, "checkForAutoKick"));
         $this->registerHandler(EventBot::MEMBER_REJOINED, array($this, "checkForAutoKick"));
 
+        if ($this->config->modAddOnly) {
+            $this->registerHandler(EventBot::MEMBER_ADDED, array($this, "checkThatModeratorAddedMember"));
+        }
+
         $this->registerCommand("broadcast",  array($this, "broadcast"),         "Broadcast a message");
         $this->registerCommand("config",     array($this, "config"),            "Shows or sets bot configuration");
         $this->registerCommand("checkpoint", array($this, "next_checkpoint"),   "Show next checkpoint");
         $this->registerCommand("cycle",      array($this, "next_cycle"),        "Show next cycle");
         $this->registerCommand("lessons",    array($this, "smurfling_lessons"), "Smurfling Lessons link");
+        $this->registerCommand("mods",       array($this, "mods"),              "Chat mods");
 
         // button should only be registered if configured
         if (isset($this->config->button)) {
@@ -146,6 +151,25 @@ class HeronsBot extends CommandBot {
         }
 
         return $message;
+    }
+
+    public function checkThatModeratorAddedMember($data) {
+        if (!$this->isMod($data['by']->user_id)) {
+            $this->logger->info(sprintf("%s (%s) is not a mod, cannot add new members", $data['by']->nickname, $data['by']->user_id));
+            $this->removeMember($data['who']->user_id);
+            $this->sendMessage("I'm sorry, but this chat only allows Mods to add new members.");
+            // Die to prevent other handlers
+            die();
+        }
+    }
+
+    public function mods($cmd, $seperator = "\n", $prefix = "Moderators:\n\n") {
+        $mods = $prefix . "%s";
+        foreach ($this->config->mods as $mod) {
+            $mods = sprintf($mods, $this->getMemberByID($mod)->nickname . $seperator . "%s");
+        }
+        $mods = sprintf($mods, "");
+        return $mods;
     }
 
     public function next_checkpoint() {
