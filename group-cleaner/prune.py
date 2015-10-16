@@ -28,7 +28,7 @@ parser = argparse.ArgumentParser(description = 'Remove inactive group members')
 parser.add_argument('data_file',
                     type=str,
                     help='The data file to be processed')
-parser.add_argument('--for_realz',
+parser.add_argument('--ya_rly',
                     action='store_true',
                     help='Really prune the group...')
 
@@ -38,6 +38,16 @@ DATADIR = SCRIPTDIR + '/data'
 LOG = logging.getLogger('prune')
 LOG.setLevel(logging.DEBUG)
 
+GROUP_REMOVAL_MESSAGE = (
+    "I'm going to remove inactive people from the group shortly.  They "
+    "have not posted or liked anything in the group for an extended period "
+    "and have not responded to my PMs.  They are welcome back at any time."
+)
+
+PERSONAL_REMOVAL_MESSAGE = (
+    "OK, I haven't seen a response so I'm going to remove you from {0}. "
+    "Feel free to rejoin at any time (speak to a mod)."
+)
 
 """
 Given a data file name, return the most recent revision
@@ -87,8 +97,81 @@ def findGroupFromID(group_id, group_class = groupy.Group):
             break
     if not target_group:
         LOG.error('Could not find group id {0}'.format(group_id))
+        
     return target_group
 
+"""Get the inactive members from member_status"""
+def getInactiveMembers(member_status):
+    now = datetime.now()
+    inactive = []
+    
+    for id in member_status.keys():
+        if member_status[id]['active']:
+            continue
+        if member_status[id]['deadline'] > now:
+            continue
+        inactive.append(member_status[id]['obj'])
+
+
+"""Check the pending PMs and update member_status"""
+def updateMemberStatusFromPMs(member_status):
+    
+    for member in getInactiveMembers(member_status):
+        status = member_status[member.user_id]
+        message_seen = False
+        
+        messages = m.messages()
+        while True:
+            
+            for message in messages:
+                
+                if message.created_at < status['message_sent']:
+                    break
+                
+                if message.id == status['message_id']:
+                    message_seen = True
+                    
+                    if member.user_id in message.favorited_by:
+                        # This is not entirely accurate, but likes don't have
+                        # a timestamp
+                        status['lastSeen'] = message.created_at
+                        status['active'] = True
+                        status['message_id'] = None
+                        status['message_sent'] = None
+                        
+                    break
+                
+            if message_seen:
+                break
+            
+            if messages[-1].created_at < status['message_sent']:
+                break
+            
+            messages = messages.older()
+        
+
+"""Remove inactive members from the group with appropriate notifications"""
+def removeInactiveMembers(member_status, group, ya_rly):
+    
+    LOG.info('Sending a notice to {0}...'.format(group.name))
+    if ya_rly:
+        group.post(GROUP_REMOVAL_MESSAGE)
+    
+    for member in getInactiveMembers(member_status):
+        LOG.info('Sending a notice to {0}...'.format(member.nickname))
+        if ya_rly:
+          member.post(PERSONAL_REMOVAL_MESSAGE.format(group.name))
+      
+        LOG.info('Removing {0} from {1}...'.format(
+            member.nickname,
+            group.name))
+        if ya_rly:
+            group.remove(member)
+
+        LOG.debug('Removing {0} from status data.')
+        if ya_rly:
+            del member_status[member.user_id]
+        
 
 """Get the group given the data file path"""
 def getGroupFromDataFilePath(path):
@@ -116,8 +199,6 @@ def main(args):
     fh.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
     LOG.addHandler(fh)
     
-    now =  datetime.now()
-    
     group = getGroupFromDataFilePath(args.data_file)
     
     filename = selectNewestDataFile(args.data_file)
@@ -125,7 +206,7 @@ def main(args):
     with open(filename, 'rb') as f:
         member_status = pickle.load(f)
     
-    # TODO(ken): Load PMs and check for responses.  Return list of people to be removed
+    updateMemberStatusFromPMs(member_status)
     
     # Save updated member status in a new file, named with the same YYYYMMDDHHMMSS
     # as the source file, but with an incremented number at the end.  So if the file
@@ -135,8 +216,7 @@ def main(args):
     filename = selectNextDataFile(filename)
     with open(filename, 'wb') as f:
         
-        # TODO(ken): Send message to group, to inactive members, and remove them
-        # TODO(ken): Remove them from status structure
+        removeInactiveMembers(member_status, group, args.ya_rly)
         
         pickle.dump(member_status, f)
     

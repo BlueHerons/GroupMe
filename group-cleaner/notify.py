@@ -45,7 +45,7 @@ parser.add_argument('--deadline_days',
         default=7, 
         type=int, 
         help='The grace period for removal')
-parser.add_argument("--for_realz",
+parser.add_argument("--ya_rly",
         action='store_true',
         help='Really send notifications')
 
@@ -80,8 +80,9 @@ def buildMemberStatus(group, inactive, deadline):
         status[m.user_id] = {
             'active': False,
             'message_id': None,
+            'message_sent': None,
             'obj': m,
-            'lastSeen': inactive,
+            'lastSeen': None,
             'deadline': deadline
         }
     return status
@@ -145,46 +146,13 @@ def pingInactiveMembers(status, group, inactive, deadline, msg = PING_MESSAGE):
             )
         )
         message = m.post(msg.format(group.name, inactive, deadline))
-        message_id = message[0]['direct_message']['id']
-        status[m.user_id]['message_id'] = message_id
+        
+        status[m.user_id]['message_id'] = message[0]['direct_message']['id']
+        status[m.user_id]['message_sent'] = datetime.fromtimestamp(
+          message[0]['direct_message']['created_at']
+          )
 
 
-<<<<<<< HEAD
-#
-# Main program
-#
-
-target_group = findGroupFromID(args.group_id)
-if target_group:
-    GROUPDIR = DATADIR + '/' + target_group.group_id
-    GROUPLINK = DATADIR + '/' + target_group.name
-    os.makedirs(GROUPDIR, mode = 0o777, exist_ok = True)
-    if os.path.exists(GROUPLINK):
-        os.unlink(GROUPLINK)
-    os.symlink(GROUPDIR, GROUPLINK)
-else:
-    LOG.error('Could not find group ID {0}'.format(args.group_id))
-    sys.exit(0)
-
-LOG.info("Getting membership and reading {0} days of messages...".format(args.inactive_days))
-
-inactive_datetime = now - timedelta(args.inactive_days)
-deadline_datetime = now + timedelta(args.deadline_days)
-member_status = buildMemberStatusFromMessages(
-        target_group, 
-        inactive_datetime, 
-        deadline_datetime
-        )
-
-DATAFILE = GROUPDIR + '/' + now.strftime('%Y%m%d%H%M%S')
-with open(DATAFILE, 'wb') as f:
-    if args.for_realz:
-        pingInactiveMembers(member_status, target_group, inactive, deadline)
-
-    LOG.info('Saving member status as {0}'.format(DATAFILE))
-    pickle.dump(member_status, f)
-
-=======
 """Main program"""
 def main(args):
 
@@ -226,7 +194,7 @@ def main(args):
     
     datafile = DATADIR + '/' + now.strftime('%Yi%m%d%H%M%S')
     with open(datafile, 'wb') as f:
-        if args.for_realz:
+        if args.ya_rly:
             pingInactiveMembers(member_status, target_group, inactive, deadline)
     
         LOG.info('Saving member status as {0}'.format(datafile))
@@ -235,6 +203,5 @@ def main(args):
 if __name__ == "__main__":
     args = parser.parse_args()
     main(args)
->>>>>>> af4d1df609159b5581ea0b5baa09fc2d0188786b
 
 
