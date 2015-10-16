@@ -58,12 +58,17 @@ abstract class BaseBot {
             }
         }
         else {
-            $this->logger->debug("Config file doesnt exist");
+            $this->logger->info("Config file doesnt exist");
             $this->config = (object) array(
                 "bot" => get_class($this),
                 "mods" => array(),
                 "blacklist" => array()
             );
+        }
+
+        if (isset($config->log)) {
+            $this->logger->setLogLevelThreshold($config->log);
+            $this->logger->info("info test");
         }
 
         $me = json_decode($this->gm->users->index())->response;

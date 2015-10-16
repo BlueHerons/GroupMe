@@ -3,6 +3,7 @@
         "user_ids of bot admins"
     ],
     "token": "GroupMe API Token",
+    "log": "warn",
     "bots": {
         "Listener Bot ID": {
             "bot": "Fully quailified class name of the bot",
