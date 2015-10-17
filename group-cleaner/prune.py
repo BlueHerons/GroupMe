@@ -108,6 +108,8 @@ def getInactiveMembers(member_status):
     for id in member_status.keys():
         if member_status[id]['active']:
             continue
+        if not member_status[id]['message_id']:
+            continue
         if member_status[id]['deadline'] > now:
             continue
         inactive.append(member_status[id]['obj'])
