@@ -144,18 +144,19 @@ def getInactiveMembers(status):
 
 
 """Ping the inactive members"""
-def pingInactiveMembers(status, group, inactive, deadline, msg = PING_MESSAGE):
+def pingInactiveMembers(status, group, inactive, deadline, ya_rly, msg = PING_MESSAGE):
     for m in getInactiveMembers(status):
         LOG.info('PM-ing {0} to see if they still want to be members.'.format(
             m.nickname
             )
         )
-        message = m.post(msg.format(group.name, inactive, deadline))
-        
-        status[m.user_id]['message_id'] = message[0]['direct_message']['id']
-        status[m.user_id]['message_sent'] = datetime.fromtimestamp(
-          message[0]['direct_message']['created_at']
-          )
+        if ya_rly:
+            message = m.post(msg.format(group.name, inactive, deadline))
+            
+            status[m.user_id]['message_id'] = message[0]['direct_message']['id']
+            status[m.user_id]['message_sent'] = datetime.fromtimestamp(
+                message[0]['direct_message']['created_at']
+                )
 
 
 """Main program"""
@@ -199,8 +200,11 @@ def main(args):
     
     datafile = DATADIR + '/' + now.strftime('%Yi%m%d%H%M%S')
     with open(datafile, 'wb') as f:
-        if args.ya_rly:
-            pingInactiveMembers(member_status, target_group, inactive, deadline)
+        pingInactiveMembers(member_status,
+                            target_group,
+                            args.inactive_days,
+                            args.deadline_days,
+                            args.ya_rly)
     
         LOG.info('Saving member status as {0}'.format(datafile))
         pickle.dump(member_status, f)
