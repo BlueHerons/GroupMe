@@ -101,6 +101,9 @@ def buildMemberStatusFromMessages(group, inactive, deadline):
             if m.created_at < inactive:
                 break
             
+            if m.user_id == 'system':
+                continue
+            
             LOG.debug('Message {0} from {1} on {2}'.format(
                 m.id, 
                 m.user_id, 
@@ -110,6 +113,7 @@ def buildMemberStatusFromMessages(group, inactive, deadline):
 
             if m.user_id in status:
                 status[m.user_id]['active'] = True
+            if status[m.user_id]['lastSeen']:
                 if status[m.user_id]['lastSeen'] < m.created_at:
                     status[m.user_id]['lastSeen'] = m.created_at
 
@@ -117,8 +121,9 @@ def buildMemberStatusFromMessages(group, inactive, deadline):
                 LOG.debug('Message {0} liked by {1}'.format(m.id, id))
                 if id in status:
                     status[id]['active'] = True
-                    if status[id]['lastSeen'] < m.created_at:
-                        status[id]['lastSeen'] = m.created_at
+                    if status[id]['lastSeen']:
+                      if status[id]['lastSeen'] < m.created_at:
+                          status[id]['lastSeen'] = m.created_at
 
         if messages[-1].created_at < inactive:
             break
