@@ -68,7 +68,6 @@ abstract class BaseBot {
 
         if (isset($config->log)) {
             $this->logger->setLogLevelThreshold($config->log);
-            $this->logger->info("info test");
         }
 
         $me = json_decode($this->gm->users->index())->response;
@@ -463,7 +462,8 @@ abstract class BaseBot {
                 else {
                     $user = $this->searchMemberByName($str);
                 }
-                if ($user !== false) {
+
+                if ($user !== false && $user->user_id != -1) {
                     $mentions->loci[] = array($l[0], strlen($str) + 1);
                     $mentions->user_ids[] = $user->user_id;
                 }
