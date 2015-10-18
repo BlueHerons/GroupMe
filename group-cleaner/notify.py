@@ -55,7 +55,7 @@ DATADIR = SCRIPTDIR + '/data'
 LOG = logging.getLogger('notify')
 LOG.setLevel(logging.DEBUG)
 
-PING_MESSAGE = ('I noticed you have not been active in {0} over the past {1} days. '
+PING_MESSAGE = ("I noticed you have not been active in \'{0}\' over the past {1} days. "
                 'Please heart this post in the next {2} days if you still want to '
                 'be in this group.  If not, you do not have to do anything and will '
                 'be removed after that time.')
@@ -113,9 +113,9 @@ def buildMemberStatusFromMessages(group, inactive, deadline):
 
             if m.user_id in status:
                 status[m.user_id]['active'] = True
-            if status[m.user_id]['lastSeen']:
-                if status[m.user_id]['lastSeen'] < m.created_at:
-                    status[m.user_id]['lastSeen'] = m.created_at
+                if status[m.user_id]['lastSeen']:
+                    if status[m.user_id]['lastSeen'] < m.created_at:
+                        status[m.user_id]['lastSeen'] = m.created_at
 
             for id in m.favorited_by:
                 LOG.debug('Message {0} liked by {1}'.format(m.id, id))
@@ -146,47 +146,45 @@ def getInactiveMembers(status):
 """Ping the inactive members"""
 def pingInactiveMembers(status, group, inactive, deadline, ya_rly, msg = PING_MESSAGE):
     for m in getInactiveMembers(status):
-        LOG.info('PM-ing {0} to see if they still want to be members.'.format(
-            m.nickname
+        LOG.info('PM-ing {0} [{1}] to see if they still want to be members.'.format(
+            m.nickname, m.user_id
             )
         )
         if ya_rly:
             message = m.post(msg.format(group.name, inactive, deadline))
             
             status[m.user_id]['message_id'] = message[0]['direct_message']['id']
-            status[m.user_id]['message_sent'] = datetime.fromtimestamp(
-                message[0]['direct_message']['created_at']
-                )
+            status[m.user_id]['message_sent'] = message[0]['direct_message']['created_at']
+            LOG.debug('Sent message ID {0} at {1}'.format(
+              status[m.user_id]['message_id'], status[m.user_id]['message_sent']))
 
 
 """Main program"""
 def main(args):
 
-    os.makedirs(DATADIR + '/logs', mode = 0o777, exist_ok = True)
-    
     ch = logging.StreamHandler()
-    ch.setLevel(logging.DEBUG)
+    ch.setLevel(logging.INFO)
     ch.setFormatter(logging.Formatter('%(levelname)s - %(message)s'))
     LOG.addHandler(ch)
-    
-    fh = logging.FileHandler(DATADIR + "/logs/notify.log")
-    fh.setLevel(logging.DEBUG)
-    fh.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
-    LOG.addHandler(fh)
-    
-    now =  datetime.now()
-    
+            
     target_group = findGroupFromID(args.group_id)
-    if target_group:
-        groupdir = DATADIR + '/' + target_group.group_id
-        grouplink = DATADIR + '/' + target_group.name
-        os.makedirs(groupdir, mode = 0o777, exist_ok = True)
-        if os.path.exists(grouplink):
-            os.unlink(grouplink)
-        os.symlink(groupdir, grouplink)
-    else:
+    if not target_group:
         LOG.error('Could not find group ID {0}'.format(args.group_id))
         sys.exit(0)
+        
+    now =  datetime.now()      
+    groupdir = DATADIR + '/' + target_group.group_id
+    grouplink = DATADIR + '/' + target_group.name
+    os.makedirs(groupdir, mode = 0o777, exist_ok = True)
+    if os.path.exists(grouplink):
+        os.unlink(grouplink)
+    os.symlink(groupdir, grouplink)
+    datafile = groupdir + '/' + now.strftime('%Y%m%d%H%M%S')
+    
+    fh = logging.FileHandler(datafile + '.log')
+    fh.setLevel(logging.DEBUG)
+    fh.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+    LOG.addHandler(fh)    
     
     LOG.info("Getting membership and reading {0} days of messages...".format(args.inactive_days))
     
@@ -198,7 +196,7 @@ def main(args):
             deadline_datetime
             )
     
-    datafile = DATADIR + '/' + now.strftime('%Yi%m%d%H%M%S')
+    
     with open(datafile, 'wb') as f:
         pingInactiveMembers(member_status,
                             target_group,

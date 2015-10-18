@@ -45,7 +45,7 @@ GROUP_REMOVAL_MESSAGE = (
 )
 
 PERSONAL_REMOVAL_MESSAGE = (
-    "OK, I haven't seen a response so I'm going to remove you from {0}. "
+    "OK, I haven't seen a response so I'm going to remove you from \'{0}\'. "
     "Feel free to rejoin at any time (speak to a mod)."
 )
 
@@ -188,22 +188,25 @@ def getGroupFromDataFilePath(path):
 
 """Main program"""
 def main(args):
-
-    os.makedirs(DATADIR + '/logs', mode = 0o777, exist_ok = True)
     
     ch = logging.StreamHandler()
     ch.setLevel(logging.DEBUG)
     ch.setFormatter(logging.Formatter('%(levelname)s - %(message)s'))
-    LOG.addHandler(ch)
+    LOG.addHandler(ch)    
     
-    fh = logging.FileHandler(DATADIR + "/logs/prune.log")
+    group = getGroupFromDataFilePath(args.data_file)
+    if not group:
+        LOG.error('Could not find group ID from file {0}'.format(
+            args.data_file))
+        sys.exit(0)
+    
+    filename = selectNewestDataFile(args.data_file)
+    
+    nextfilename = selectNextDataFile(filename)
+    fh = logging.FileHandler(nextfilename + '.log')
     fh.setLevel(logging.DEBUG)
     fh.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
     LOG.addHandler(fh)
-    
-    group = getGroupFromDataFilePath(args.data_file)
-    
-    filename = selectNewestDataFile(args.data_file)
     
     with open(filename, 'rb') as f:
         member_status = pickle.load(f)
@@ -215,11 +218,8 @@ def main(args):
     # we read was 20150504123445 then the new file is 20150504123445.1, and if the
     # source file was .1 then the new file is .2    
     
-    filename = selectNextDataFile(filename)
-    with open(filename, 'wb') as f:
-        
+    with open(nextfilename, 'wb') as f:
         removeInactiveMembers(member_status, group, args.ya_rly)
-        
         pickle.dump(member_status, f)
     
     

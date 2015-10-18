@@ -34,11 +34,11 @@ will:
    intersted in being in the group
 4) Write out a data file (for use by subsequent scripts)
    recording which of these it did to which accounts.
-   This will be in data/<group_id>/<YYYYMMDDHHMMSS>,
-   with a symlink data/<group_name> for conmvenience.
+   This will be in data/<group_id>/<datetime> 
+   with a symlink data/<group_name> for convenience.
    This is a binary file generated with python's pickle
    module.
-5) Log all this in data/logs/notify.log
+5) Log all this in data/<group_id>/<datetime>.log
 
 If you omit the --ya_rly it'll just tell you what it would
 do, but won't PM anyone.
@@ -60,8 +60,8 @@ It will:
 3) PM the people who will be removed, telling them why.
 4) PM the group telling whem why people are being removed.
 5) Remove the people from the group.
-6) Save the new group data in data/<group_id>/<date>.#
-6) Log all this in prune.log
+6) Save the new group data in data/<group_id>/<datetime>.#
+6) Log all this in data/<group_id>/<datetime>.#.log
 
 As with notify.py, omit --ya_rly to do a dry run.
 
