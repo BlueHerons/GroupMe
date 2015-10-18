@@ -133,7 +133,8 @@ def updateMemberStatusFromPMs(member_status):
                 if message.id == status['message_id']:
                     message_seen = True
                     
-                    if member.user_id in message.favorited_by:
+                    # If the sender favorites the message we'll count that too.
+                    if len(message.favorited_by):
                         # This is not entirely accurate, but likes don't have
                         # a timestamp
                         status['lastSeen'] = message.created_at

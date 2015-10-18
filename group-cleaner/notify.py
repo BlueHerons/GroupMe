@@ -12,7 +12,7 @@ Parameters:
     groups you're a member of.
   inactive_days: The number of days you haven't done
     anything in the group to be considered inactive.  
-    Defaults to 14 days.
+    Defaults to 31 days.
   deadline_days: The number of days after you're
     notified before you're removed.  Defaults to 7
     days.
@@ -38,7 +38,7 @@ parser.add_argument('group_id',
         type=str, 
         help='The group ID to be processed')
 parser.add_argument('--inactive_days', 
-        default=14, 
+        default=31, 
         type=int, 
         help='The number of days someone is inactive before they get notified')
 parser.add_argument('--deadline_days',
@@ -113,17 +113,20 @@ def buildMemberStatusFromMessages(group, inactive, deadline):
 
             if m.user_id in status:
                 status[m.user_id]['active'] = True
-                if status[m.user_id]['lastSeen']:
-                    if status[m.user_id]['lastSeen'] < m.created_at:
-                        status[m.user_id]['lastSeen'] = m.created_at
+                if not status[m.user_id]['lastSeen']:
+                    status[m.user_id]['lastSeen'] = m.created_at
+                elif status[m.user_id]['lastSeen'] < m.created_at:
+                    status[m.user_id]['lastSeen'] = m.created_at
 
             for id in m.favorited_by:
-                LOG.debug('Message {0} liked by {1}'.format(m.id, id))
+                LOG.debug('Message {0} on {1} liked by {2}'.format(
+                    m.id, m.created_at, id))
                 if id in status:
                     status[id]['active'] = True
-                    if status[id]['lastSeen']:
-                      if status[id]['lastSeen'] < m.created_at:
-                          status[id]['lastSeen'] = m.created_at
+                    if not status[id]['lastSeen']:
+                        status[id]['lastSeen'] = m.created_at
+                    elif status[id]['lastSeen'] < m.created_at:
+                        status[id]['lastSeen'] = m.created_at
 
         if messages[-1].created_at < inactive:
             break
