@@ -13,6 +13,7 @@ abstract class EventBot extends BaseBot {
         const MEMBER_LEFT               = "member_left";
         const MEMBER_REJOINED           = "member_rejoined";
         const MEMBER_REMOVED            = "member_removed";
+        const MEMBER_UNRESPONSIVE       = "member_unresponsive";
         const MESSAGE                   = "message";
         const OFFICE_MODE_CHANGED       = "office_mode_changed";
         const UNKNOWN                   = "unknown_event";
@@ -28,6 +29,7 @@ abstract class EventBot extends BaseBot {
             self::MEMBER_LEFT               => "/^(.*)( has left the group\.)$/",
             self::MEMBER_REJOINED           => "/^(.*)( has rejoined the group)$/",
             self::MEMBER_REMOVED            => "/^(.*)( removed )(.*)( from the group\.)$/",
+            self::MEMBER_UNRESPONSIVE       => "/^(.*)( is new to GroupMe and hasn't responded, so we stopped sending them messages from this group\.)$/",
             self::OFFICE_MODE_CHANGED       => "/^(.*)( ((dis|en)abled) Office Mode. Messages (will|won't) buzz your phone\.)$/",
         );
 
@@ -69,6 +71,9 @@ abstract class EventBot extends BaseBot {
                         break;
                     case self::MEMBER_REMOVED:
                         $this->executeHandlers(self::MEMBER_REMOVED, $this->parseMemberRemovedMessage());
+                        break;
+                    case self::MEMBER_UNRESPONSIVE:
+                        $this->executeHandlers(self::MEMBER_UNRESPONSIVE, $this->parseMemberUnresponsiveMessage());
                         break;
                     case self::OFFICE_MODE_CHANGED:
                         $this->executeHandlers(self::OFFICE_MODE_CHANGED, $this->parseOfficeModeChangeMessage());
@@ -128,6 +133,15 @@ abstract class EventBot extends BaseBot {
                 "event" => self::MEMBER_REMOVED,
                 "who" => $this->searchMemberByName($matches[3]),
                 "by" => $this->searchMemberByName($matches[1])
+            );
+            return $data;
+        }
+
+        private function parseMemberUnresponsiveMessage() {
+            $matches = $this->extractData(self::MEMBER_UNRESPONSIVE);
+            $data = array(
+                "event" => self::MEMBER_UNRESPONSIVE,
+                "who" => $this->searchMemberByName($matches[1]),
             );
             return $data;
         }
