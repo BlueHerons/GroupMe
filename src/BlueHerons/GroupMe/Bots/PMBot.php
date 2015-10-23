@@ -6,7 +6,7 @@ use \DateTime;
 use \ReflectionClass;
 use \stdClass;
 
-class PMBot extends HeronsBot {
+class PMBot extends ResWueBot {
 
     private $payload;
 
