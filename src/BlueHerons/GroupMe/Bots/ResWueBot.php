@@ -49,9 +49,7 @@ class ResWueBot extends HeronsBot {
             $message .= $guardians[$i]->portal->name . "\n";
             $message .= $this->getPortalLink($guardians[$i]->portal) . "\n\n";
         }
-        $this->replyToSender($message);
-
-        return sprintf("Okay, @%s, I PM'd you the current list of guardians marked in RESWUE.", $this->getPayload()['name']);
+        return $message;
     }
 
     /**
