@@ -54,13 +54,13 @@ class PMBot extends HeronsBot {
     }
 
     public function broadcast() {
-        if ($this->isAdmin($this->getPayload()['sender_id'])) {
+        if ($this->isAdmin($this->payload->other_user->id)) {
             $message= implode(" ", array_slice(func_get_args(), 1));
-            $message = sprintf("[NETWORK BROADCAST FROM %s]\n\n%s", strtoupper($this->getPayload()['name']), $message);
+            $message = sprintf("** Broadcast from %s **\n\n%s", $this->payload->other_user->name, $message);
             $this->sendBroadcast($message);
         }
         else {
-            $this->replyToSender("Sorry, but only admins can use the \"broadcast\" command.");
+            $this->replyToSender("Sorry, you cannot use this command.");
         }
     }
 
