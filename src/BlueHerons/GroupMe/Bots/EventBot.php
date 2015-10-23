@@ -93,7 +93,7 @@ abstract class EventBot extends BaseBot {
         }
 
         private function executeHandlers($event, $data) {
-            if (sizeof($this->handlers) > 0 && sizeof($this->handlers[$event]) > 0) {
+            if (sizeof($this->handlers) > 0 && @sizeof($this->handlers[$event]) > 0) {
                 foreach ($this->handlers[$event] as $function) {
                     call_user_func($function, $data);
                 }
