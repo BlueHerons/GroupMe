@@ -99,6 +99,7 @@ class PMBot extends ResWueBot {
             "recipient_id" => $this->payload->other_user->id,
             "text" => $message
         ));
+        sleep(1);
     }
 
     // Override
