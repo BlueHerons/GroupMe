@@ -112,6 +112,26 @@ abstract class BaseBot {
     }
 
     /**
+     * Determines if the given user is a member of the chat
+     *
+     * @param mixed $user user_id or name to search users for
+     * @param int $chat chat_id of a group
+     *
+     * @return boolean
+     */
+    protected function isMember($user, $chat) {
+        $id = is_numeric($user) ? $user : 0;
+        $chat = is_numeric($chat) ? $chat : 0;
+
+        foreach ($this->getGroupInfo($chat)->members as $member) {
+            if ($member->user_id == $user)
+                return true;
+        }
+
+        return false;
+    }
+
+    /**
      * Returns true if the given user id is not on the blacklist.
      *
      * @param int $user user ID
@@ -119,8 +139,8 @@ abstract class BaseBot {
      * @return boolean
      */
     protected function isAuthorized($user) {
-        if (in_array($user, $this->config->blacklist)) {
-            $this->logger->info(sprintf("%s is blacklisted.", $user));
+        if (in_array($user, $this->config->blacklist) || in_array($user, $this->config->autokick)) {
+            $this->logger->info(sprintf("%s is blacklisted or marked for autokick.", $user));
             return false;
         }
         return true;
@@ -313,9 +333,10 @@ abstract class BaseBot {
     /**
      * Gets information about the group that the message was sent from
      */
-    protected function getGroupInfo() {
+    protected function getGroupInfo($group_id = 0) {
         if ($this->group == null) {
-            $this->group = json_decode($this->gm->groups->show($this->getGroupID()))->response;
+            $group_id = $group_id == 0 ? $this->getGroupID() : $group_id;
+            $this->group = json_decode($this->gm->groups->show($group_id))->response;
             $m = $this->group->members;
             usort($m, function($a, $b) {
                 return strcmp($a->nickname, $b->nickname);
