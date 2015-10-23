@@ -6,7 +6,7 @@ use \DateTime;
 use \ReflectionClass;
 use \stdClass;
 
-class PMBot extends CommandBot {
+class PMBot extends HeronsBot {
 
     private $payload;
 
@@ -15,9 +15,12 @@ class PMBot extends CommandBot {
         parent::__construct($token, "listen");
 
         $this->unregisterCommand("ack");
+        $this->unregisterCommand("config");
         $this->unregisterCommand("help");
         $this->unregisterCommand("ignore");
         $this->unregisterCommand("info");
+        $this->unregisterCommand("mods");
+        $this->unregisterCommand("rules");
 
         $this->registerCommand("announce",  array($this, "announce"),  "Announce something to a single chat");
         $this->registerCommand("broadcast", array($this, "broadcast"), "Broadcast a message to all chats");
@@ -36,8 +39,14 @@ class PMBot extends CommandBot {
             $groups = json_decode(utf8_encode($this->gm->groups->index(array("per_page" => 100))))->response;
             foreach ($groups as $group) {
                 if ($group_id == $group->group_id) {
-                    $this->sendGroupMessage(sprintf("Announcement from %s:\n\n%s", $this->payload->other_user->name, $message), $group->group_id);
-                    return sprintf("Announcement sent to %s", $group->name);
+                    // User must be admin or member of group
+                    if ($this->isAdmin($this->payload->other_user->id) || $this->isMember($this->payload->other_user->id, $group_id)) {
+                        $this->sendGroupMessage(sprintf("** Announcement from %s **\n\n%s", $this->payload->other_user->name, $message), $group->group_id);
+                        return sprintf("Announcement sent to %s", $group->name);
+                    }
+                    else {
+                        return "Sorry, you cannot use this command.";
+                    }
                 }
             }
             return sprintf("I am not a member of group %s", $group_id);
@@ -78,7 +87,8 @@ class PMBot extends CommandBot {
             }
         }
         else {
-            $this->logger->info(sprintf("%s sent a PM to the bot, but is unauthorized.", $sender));
+            $this->logger->info(sprintf("%s sent a PM to the bot, but is unauthorized.", $this->payload->other_user->name));
+            $this->sendMessage("You are not an authorized user.");
         }
     }
 
@@ -89,5 +99,10 @@ class PMBot extends CommandBot {
             "recipient_id" => $this->payload->other_user->id,
             "text" => $message
         ));
+    }
+
+    // Override
+    public function replyToSender($message) {
+        $this->sendMessage($message);
     }
 }
