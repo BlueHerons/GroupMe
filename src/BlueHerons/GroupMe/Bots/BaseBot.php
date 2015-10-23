@@ -287,7 +287,6 @@ abstract class BaseBot {
      */
     protected function sendDirectMessage($user_id, $message) {
         $this->logger->debug(sprintf("Sending %s a message: %s", $user_id, $message));
-        $message = sprintf("[%s] %s", $this->getGroupInfo()->name, $message);
         $this->gm->directmessages->create(array(
             "source_guid" => uniqid(),
             "recipient_id" => $user_id,
