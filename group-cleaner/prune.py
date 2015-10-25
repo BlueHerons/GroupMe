@@ -62,7 +62,7 @@ def selectNewestDataFile(filename):
   
     pattern = head + '/' + prefix + '*'
     LOG.debug('Getting all files matching {0}'.format(pattern))
-    dir_entries = glob(pattern)
+    dir_entries = [f for f in glob(pattern) if not f.endswith('.log')]  
     dir_entries.sort()
   
     LOG.debug("Selecting {0} as the most recent data file version".format(dir_entries[-1]))
@@ -111,8 +111,15 @@ def getInactiveMembers(member_status):
         if not member_status[id]['message_id']:
             continue
         if member_status[id]['deadline'] > now:
+            LOG.debug("Member{0} has until {1} to respond, skipping".format(
+                member_status[id]['obj'].nickname,
+                member_status[id]['deadline']))
             continue
         inactive.append(member_status[id]['obj'])
+        LOG.debug("Member {0} is a removal candidate".format(
+            member_status[id]['obj'].nickname))
+        
+    return inactive
 
 
 """Check the pending PMs and update member_status"""
@@ -122,18 +129,20 @@ def updateMemberStatusFromPMs(member_status):
         status = member_status[member.user_id]
         message_seen = False
         
-        messages = m.messages()
+        messages = member.messages()
         while True:
             
+            LOG.debug("Reading messages for {0}...".format(member.nickname))
             for message in messages:
                 
-                if message.created_at < status['message_sent']:
+                LOG.debug("... {0} ({1})".format(message.id, message.created_at))
+                if message.created_at < datetime.fromtimestamp(status['message_sent']):
                     break
                 
                 if message.id == status['message_id']:
                     message_seen = True
                     
-                    # If the sender favorites the message we'll count that too.
+                    # If the sender favorites the message we'll count that too
                     if len(message.favorited_by):
                         # This is not entirely accurate, but likes don't have
                         # a timestamp
@@ -141,6 +150,8 @@ def updateMemberStatusFromPMs(member_status):
                         status['active'] = True
                         status['message_id'] = None
                         status['message_sent'] = None
+                        LOG.debug("... {0} wants to stay in, set to active.".format(
+                            member.nickname))
                         
                     break
                 
@@ -156,25 +167,30 @@ def updateMemberStatusFromPMs(member_status):
 """Remove inactive members from the group with appropriate notifications"""
 def removeInactiveMembers(member_status, group, ya_rly):
     
-    LOG.info('Sending a notice to {0}...'.format(group.name))
-    if ya_rly:
-        group.post(GROUP_REMOVAL_MESSAGE)
+    inactives = getInactiveMembers(member_status)
+    if inactives:
     
-    for member in getInactiveMembers(member_status):
-        LOG.info('Sending a notice to {0}...'.format(member.nickname))
+        LOG.info('Sending a notice to {0}...'.format(group.name))
         if ya_rly:
-          member.post(PERSONAL_REMOVAL_MESSAGE.format(group.name))
-      
-        LOG.info('Removing {0} from {1}...'.format(
-            member.nickname,
-            group.name))
-        if ya_rly:
-            group.remove(member)
-
-        LOG.debug('Removing {0} from status data.')
-        if ya_rly:
-            del member_status[member.user_id]
+            group.post(GROUP_REMOVAL_MESSAGE)
         
+        for member in inactives:
+            LOG.info('Sending a notice to {0}...'.format(member.nickname))
+            if ya_rly:
+              member.post(PERSONAL_REMOVAL_MESSAGE.format(group.name))
+          
+            LOG.info('Removing {0} from {1}...'.format(
+                member.nickname,
+                group.name))
+            if ya_rly:
+                group.remove(member)
+    
+            LOG.debug('Removing {0} from status data.'.format(
+                member.nickname))
+            if ya_rly:
+                del member_status[member.user_id]
+    else:
+        LOG.info('No removal candidates for {0}'.format(group.name))
 
 """Get the group given the data file path"""
 def getGroupFromDataFilePath(path):
