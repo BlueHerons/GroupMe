@@ -2,6 +2,7 @@
 
 require("vendor/autoload.php");
 
+use BlueHerons\GroupMe\Bots\PMBot;
 use Katzgrau\KLogger\Logger;
 use Psr\Log\LogLevel;
 
@@ -23,25 +24,31 @@ $config = json_decode(file_get_contents("config.json"));
 
 // This endpoint is undocumented in the GroupMe API. It was reverse engineered from the web client.
 // Only direct message conversations are returned.
-$url = "https://v2.groupme.com/chats?token=" . $config->token . "&page=1&per_page=" . DM_COUNT;
+function getGroupMeDirectMessages() {
+    global $config;
+    $url = "https://v2.groupme.com/chats?token=" . $config->token . "&page=1&per_page=" . DM_COUNT;
 
-$hndl = curl_init();
-curl_setopt($hndl, CURLOPT_URL, $url);
-curl_setopt($hndl, CURLOPT_CUSTOMREQUEST, "GET");
-curl_setopt($hndl, CURLOPT_RETURNTRANSFER, true);
+    $hndl = curl_init();
+    curl_setopt($hndl, CURLOPT_URL, $url);
+    curl_setopt($hndl, CURLOPT_CUSTOMREQUEST, "GET");
+    curl_setopt($hndl, CURLOPT_RETURNTRANSFER, true);
 
-$result = curl_exec($hndl);
-curl_close($hndl);
+    $result = curl_exec($hndl);
+    curl_close($hndl);
 
-$data = json_decode($result);
+    return json_decode($result);
+}
+
+$data = getGroupMeDirectMessages();
 
 // Use a GroupMe API client for documented API calls
 $gm = new GroupMePHP\groupme($config->token);
 
 $logger = new Logger("logs", LogLevel::DEBUG, array(
     "extension" => "log",
-    "logFormat" => "[{date} Bot PM Listener] [{level}] {message}"
+    "logFormat" => "[listen - {date}] [{level}] {message}"
 ));
+//$logger->setLogLevelThreshold($config->log);
 
 if ($data->meta->code != 200) {
     // Ignore some codes
@@ -56,18 +63,8 @@ if ($data->meta->code != 200) {
 
 foreach ($data->response->chats as $chat) {
     if ($chat->last_message->sender_id == $chat->other_user->id) {
-        $gm->directmessages->create(array(
-            "source_guid" => uniqid(),
-            "recipient_id" => $chat->other_user->id,
-            "text" => "I am a bot. I do not yet understand commands sent via direct message."
-        ));
-
-        foreach($config->admin as $admin) {
-           $gm->directmessages->create(array(
-               "source_guid" => uniqid(),
-               "recipient_id" => $admin,
-               "text" => sprintf("[Bot PM Listener] %s sent a message to the bot: %s", $chat->other_user->name, $chat->last_message->text)
-           ));
-        }
+        // Parse commands like a normal bot
+        $bot = new PMBot($config->token);
+        $bot->listen();
     }
 }
