@@ -74,7 +74,7 @@ abstract class CommandBot extends EventBot {
         }
     }
 
-    private function listCommands() {
+    protected function listCommands() {
         $commands = array();
         $max_cmd_length = 0;
         foreach ($this->commands as $cmd => $c) {
