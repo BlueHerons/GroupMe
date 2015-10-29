@@ -25,6 +25,7 @@ class HeronsBot extends CommandBot {
         $this->registerCommand("cycle",      array($this, "next_cycle"),        "Show next cycle");
         $this->registerCommand("lessons",    array($this, "smurfling_lessons"), "Smurfling Lessons link");
         $this->registerCommand("mods",       array($this, "mods"),              "Chat mods");
+        $this->registerCommand("whoami",     array($this, "whoami"),            "Who am I?");
 
         // button should only be registered if configured
         if (isset($this->config->button)) {
@@ -163,7 +164,7 @@ class HeronsBot extends CommandBot {
         }
     }
 
-    public function mods($cmd, $seperator = "\n", $prefix = "Moderators:\n\n") {
+    public function mods($cmd, $seperator = "\n", $prefix = "") {
         $mods = $prefix . "%s";
         foreach ($this->config->mods as $mod) {
             $mods = sprintf($mods, $this->getMemberByID($mod)->nickname . $seperator . "%s");
@@ -173,6 +174,7 @@ class HeronsBot extends CommandBot {
     }
 
     public function next_checkpoint() {
+        return print_r(func_get_args(), true);
         $next = Cycle::getNextCheckpoint();
         return sprintf("Next checkpoint at %s. (%s)",
                        $next->format("g A"),
@@ -200,10 +202,9 @@ class HeronsBot extends CommandBot {
         return sprintf("Smurfling lessons can be found at %s. These infographics are a great supplement to in-game training.", "http://blueheronsresistance.com/guide/lessons");
     }
 
-    public function whois() {
-        $args = array_values(array_slice(func_get_args(), 1));
+    public function whoami() {
         if (sizeof($args) == 1) {
-            $user = $this->searchMemberByName($args[0]);
+            $user = $this->searchMemberByName($this->getPayload()['sender_id']);
             if ($user->user_id != -1) {
                 return sprintf("@%s's user_id is %d", $user->nickname, $user->user_id);
             }
