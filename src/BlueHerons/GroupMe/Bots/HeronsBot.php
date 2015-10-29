@@ -24,11 +24,14 @@ class HeronsBot extends CommandBot {
         $this->registerCommand("cycle",      array($this, "next_cycle"),        "Show next cycle");
         $this->registerCommand("lessons",    array($this, "smurfling_lessons"), "Smurfling Lessons link");
         $this->registerCommand("mods",       array($this, "mods"),              "Chat mods");
-        $this->registerCommand("whoami",     array($this, "whoami"),            "Who am I?");
 
         // button should only be registered if configured
         if (isset($this->config->button)) {
             $this->registerCommand("button", array($this, "smash_button"), "Button link");
+        }
+
+        if (isset($this->config->chores)) {
+            $this->registerCommand("chores", array($this, "chores"), "Link to Chore wheel");
         }
 
         // rules should only be registered if configured
@@ -84,6 +87,9 @@ class HeronsBot extends CommandBot {
         }
     }
 
+    public function chores() {
+        return $this->config->chores;
+    }
 
     public function config() {
         $args = array_values(array_slice(func_get_args(), 1));
