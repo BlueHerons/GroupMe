@@ -19,7 +19,6 @@ class HeronsBot extends CommandBot {
             $this->registerHandler(EventBot::MEMBER_ADDED, array($this, "checkThatModeratorAddedMember"));
         }
 
-        $this->registerCommand("broadcast",  array($this, "broadcast"),         "Broadcast a message");
         $this->registerCommand("config",     array($this, "config"),            "Shows or sets bot configuration");
         $this->registerCommand("checkpoint", array($this, "next_checkpoint"),   "Show next checkpoint");
         $this->registerCommand("cycle",      array($this, "next_cycle"),        "Show next cycle");
@@ -72,17 +71,6 @@ class HeronsBot extends CommandBot {
         }
         else {
             $this->replyToSender("You have already opted-in to receiving alerts for this group.");
-        }
-    }
-
-    public function broadcast() {
-        if ($this->isAdmin($this->getPayload()['sender_id'])) {
-            $message= implode(" ", array_slice(func_get_args(), 1));
-            $message = sprintf("[NETWORK BROADCAST FROM %s]\n\n%s", strtoupper($this->getPayload()['name']), $message);
-            $this->sendBroadcast($message);
-        }
-        else {
-            $this->replyToSender("Sorry, but only admins can use the \"broadcast\" command.");
         }
     }
 
