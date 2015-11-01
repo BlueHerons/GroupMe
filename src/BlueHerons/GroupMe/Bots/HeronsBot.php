@@ -19,7 +19,6 @@ class HeronsBot extends CommandBot {
             $this->registerHandler(EventBot::MEMBER_ADDED, array($this, "checkThatModeratorAddedMember"));
         }
 
-        $this->registerCommand("broadcast",  array($this, "broadcast"),         "Broadcast a message");
         $this->registerCommand("config",     array($this, "config"),            "Shows or sets bot configuration");
         $this->registerCommand("checkpoint", array($this, "next_checkpoint"),   "Show next checkpoint");
         $this->registerCommand("cycle",      array($this, "next_cycle"),        "Show next cycle");
@@ -29,6 +28,10 @@ class HeronsBot extends CommandBot {
         // button should only be registered if configured
         if (isset($this->config->button)) {
             $this->registerCommand("button", array($this, "smash_button"), "Button link");
+        }
+
+        if (isset($this->config->chores)) {
+            $this->registerCommand("chores", array($this, "chores"), "Link to Chore wheel");
         }
 
         // rules should only be registered if configured
@@ -74,17 +77,6 @@ class HeronsBot extends CommandBot {
         }
     }
 
-    public function broadcast() {
-        if ($this->isAdmin($this->getPayload()['sender_id'])) {
-            $message= implode(" ", array_slice(func_get_args(), 1));
-            $message = sprintf("[NETWORK BROADCAST FROM %s]\n\n%s", strtoupper($this->getPayload()['name']), $message);
-            $this->sendBroadcast($message);
-        }
-        else {
-            $this->replyToSender("Sorry, but only admins can use the \"broadcast\" command.");
-        }
-    }
-
     public function checkForAutoKick($data) {
         $this->logger->info(sprintf("Checking %s (%s) for auto-kick", $data['who']->nickname, $data['who']->user_id));
         if (isset($this->config->autokick) && is_array($this->config->autokick)) {
@@ -95,6 +87,9 @@ class HeronsBot extends CommandBot {
         }
     }
 
+    public function chores() {
+        return $this->config->chores;
+    }
 
     public function config() {
         $args = array_values(array_slice(func_get_args(), 1));
@@ -163,7 +158,7 @@ class HeronsBot extends CommandBot {
         }
     }
 
-    public function mods($cmd, $seperator = "\n", $prefix = "Moderators:\n\n") {
+    public function mods($cmd, $seperator = "\n", $prefix = "") {
         $mods = $prefix . "%s";
         foreach ($this->config->mods as $mod) {
             $mods = sprintf($mods, $this->getMemberByID($mod)->nickname . $seperator . "%s");
@@ -173,6 +168,7 @@ class HeronsBot extends CommandBot {
     }
 
     public function next_checkpoint() {
+        return print_r(func_get_args(), true);
         $next = Cycle::getNextCheckpoint();
         return sprintf("Next checkpoint at %s. (%s)",
                        $next->format("g A"),
@@ -200,10 +196,9 @@ class HeronsBot extends CommandBot {
         return sprintf("Smurfling lessons can be found at %s. These infographics are a great supplement to in-game training.", "http://blueheronsresistance.com/guide/lessons");
     }
 
-    public function whois() {
-        $args = array_values(array_slice(func_get_args(), 1));
+    public function whoami() {
         if (sizeof($args) == 1) {
-            $user = $this->searchMemberByName($args[0]);
+            $user = $this->searchMemberByName($this->getPayload()['sender_id']);
             if ($user->user_id != -1) {
                 return sprintf("@%s's user_id is %d", $user->nickname, $user->user_id);
             }

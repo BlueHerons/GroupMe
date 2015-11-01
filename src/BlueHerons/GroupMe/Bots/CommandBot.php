@@ -32,7 +32,7 @@ abstract class CommandBot extends EventBot {
         }
     }
 
-    private function info() {
+    protected function info() {
         $commitsh = substr(`git rev-parse HEAD`, 0, 8);
         $bot = array_pop(explode("\\", $this->config->bot));
         $message  = sprintf("Group..... : %s (ID: %s)\n", $this->getGroupInfo()->name, $this->getGroupInfo()->group_id);

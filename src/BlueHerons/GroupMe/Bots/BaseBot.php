@@ -459,7 +459,7 @@ abstract class BaseBot {
             // After each @, get the length of the sequence of characters until something non-alphanumeric is
             // encoumtered
             foreach ($positions as $p) {
-                $seq = array_values(array_filter(preg_split("/[^a-z0-9 ()]/i", substr($message, $p))))[0];
+                $seq = array_values(array_filter(preg_split("/[^a-z0-9-\/ ()]/i", substr($message, $p))))[0];
                 $i = strpos($message, " ", $p);
                 $i = ($i === false) ? strlen($message) : $i;
                 $loci[] = array($p, $p + strlen($seq));
