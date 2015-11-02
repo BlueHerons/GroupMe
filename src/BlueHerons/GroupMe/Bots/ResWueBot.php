@@ -15,6 +15,7 @@ class ResWueBot extends HeronsBot {
     }
 
     public function guardians() {
+        $this->replyToSender("Retrieving marked portals from RESWUE...");
         $response = $this->request($this->config->reswue->endpoints->marked_portals);
         $assignee = "Guardian Alerts";
         $count = 0;
@@ -110,6 +111,5 @@ class ResWueBot extends HeronsBot {
 
         return "";
     }
-
 }
 ?>
