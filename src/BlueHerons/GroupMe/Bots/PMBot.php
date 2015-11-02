@@ -58,6 +58,7 @@ class PMBot extends ResWueBot {
             $message= implode(" ", array_slice(func_get_args(), 1));
             $message = sprintf("** Broadcast from %s **\n\n%s", $this->payload->other_user->name, $message);
             $this->sendBroadcast($message);
+            $this->replyToSender("Broadcasr sent.");
         }
         else {
             $this->replyToSender("Sorry, you cannot use this command.");
