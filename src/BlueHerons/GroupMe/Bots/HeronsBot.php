@@ -150,15 +150,15 @@ class HeronsBot extends CommandBot {
 
     public function checkThatModeratorAddedMember($data) {
         if (!$this->isMod($data['by']->user_id)) {
-            $this->logger->info(sprintf("%s (%s) is not a mod, cannot add new members", $data['by']->nickname, $data['by']->user_id));
+            $this->logger->info(sprintf("%s (%s) is not a mod, cannot add new members.", $data['by']->nickname, $data['by']->user_id));
             $this->removeMember($data['who']->user_id);
-            $this->sendMessage("I'm sorry, but this chat only allows Mods to add new members.");
+            $this->sendMessage("I'm sorry, but this chat only allows mods to add new members.");
             // Die to prevent other handlers
             die();
         }
     }
 
-    public function mods($cmd, $seperator = "\n", $prefix = "") {
+    public function mods($cmd, $seperator = "\n", $prefix = "Moderators:\n\n") {
         $mods = $prefix . "%s";
         foreach ($this->config->mods as $mod) {
             $mods = sprintf($mods, $this->getMemberByID($mod)->nickname . $seperator . "%s");
@@ -168,7 +168,6 @@ class HeronsBot extends CommandBot {
     }
 
     public function next_checkpoint() {
-        return print_r(func_get_args(), true);
         $next = Cycle::getNextCheckpoint();
         return sprintf("Next checkpoint at %s. (%s)",
                        $next->format("g A"),

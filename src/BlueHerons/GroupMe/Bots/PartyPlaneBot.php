@@ -15,6 +15,7 @@ class PartyPlaneBot extends HeronsBot {
     }
 
     public function onMemberAdded($data) {
+        $this->logger->info(sprintf("%s (%s) added %s (%s) to the chat.", $data['by']->nickname, $data['by']->user_id, $data['who']->nickname, $data['who']->user_id));
         $this->sendMessage(sprintf("Welcome @%s", $data['who']->nickname));
         $this->rules();
     }
