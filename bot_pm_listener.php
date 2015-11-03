@@ -48,7 +48,7 @@ $logger = new Logger("logs", LogLevel::DEBUG, array(
     "extension" => "log",
     "logFormat" => "[listen - {date}] [{level}] {message}"
 ));
-//$logger->setLogLevelThreshold($config->log);
+$logger->setLogLevelThreshold($config->log);
 
 if ($data->meta->code != 200) {
     // Ignore some codes
