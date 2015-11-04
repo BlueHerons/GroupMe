@@ -23,6 +23,7 @@ class HeronsBot extends CommandBot {
         $this->registerCommand("checkpoint", array($this, "next_checkpoint"),   "Show next checkpoint");
         $this->registerCommand("cycle",      array($this, "next_cycle"),        "Show next cycle");
         $this->registerCommand("lessons",    array($this, "smurfling_lessons"), "Smurfling Lessons link");
+        $this->registerCommand("spin",       array($this, "spin"),              "Spins all chat members, picking one");
         $this->registerCommand("mods",       array($this, "mods"),              "Chat mods");
 
         // button should only be registered if configured
@@ -193,6 +194,13 @@ class HeronsBot extends CommandBot {
 
     public function smurfling_lessons() {
         return sprintf("Smurfling lessons can be found at %s. These infographics are a great supplement to in-game training.", "http://blueheronsresistance.com/guide/lessons");
+    }
+
+    public function spin() {
+        $i = array_rand($this->getGroupMembers());
+        $user = $this->getGroupMembers()[$i];
+        
+        return sprintf("@%s", $user->nickname);
     }
 
     public function whoami() {
