@@ -79,6 +79,22 @@ abstract class BaseBot {
     public abstract function listen();
 
     /**
+     * Creates an entry in the config file for a new bot
+     *
+     * @param string $bot_id
+     * @param int    $group Name of the chat
+     * @param string $class Fully=quailified name of the class for the bot
+     */
+    protected function initializeNewBot($bot_id, $group, $class = "BlueHerons\\GroupMe\\Bots\\HeronsBot") {
+        $c = json_decode(file_get_contents(self::CONFIG_FILE));
+        $c->bots->{$bot_id} = new \stdClass();
+        $c->bots->{$bot_id}->bot = $class;
+        $c->bots->{$bot_id}->group = $group;
+        file_put_contents(self::CONFIG_FILE, json_encode($c, JSON_PRETTY_PRINT));
+        $this->logger->info(sprintf("Bot %s initialized", substr($bot_id, 0, 6)));
+    }
+
+    /**
      * Determines if the given user is an admin
      *
      * @param mixed $user user_id or name to search users for
@@ -90,6 +106,25 @@ abstract class BaseBot {
                 $user :
                 $this->searchMemberByName($user)->user_id;
         return in_array($id, $this->gconfig->admin);
+    }
+
+    /**
+     * Determines if the bot is a member of a given group
+     *
+     * @param int $group_id The group Id to test for
+     *
+     * @return boolean
+     */
+    protected function isInGroup($group_id) {
+        $groups = json_decode(utf8_encode($this->gm->groups->index(array("per_page" => 100))))->response;
+
+        foreach ($groups as $group) {
+            if ($group_id == $group->group_id) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
