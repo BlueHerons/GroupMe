@@ -73,7 +73,7 @@ class PMBot extends ResWueBot {
             $args = func_get_args();
             $group_id = $args[1];
             if (sizeof($args) < 2) {
-                return "I cannot initialize myself without a group id.";
+                return "usage:\n\n" . CommandBot::COMMAND_CHAR . "init <group_id>";
             }
             else {
                 $this->replyToSender(sprintf("Attempting to initialize in group %d...", $group_id));
