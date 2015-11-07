@@ -27,6 +27,7 @@ class PMBot extends ResWueBot {
         $this->registerCommand("announce",  array($this, "announce"),  "Announce something to a single chat");
         $this->registerCommand("broadcast", array($this, "broadcast"), "Broadcast a message to all chats");
         $this->registerCommand("init",      array($this, "init"),      "Initialize the bot in a chat");
+        $this->registerCommand("whereami",  array($this, "whereami"),  "Lists groups the bot is in");
 
         $this->payload = $chat;
     }
@@ -157,5 +158,26 @@ class PMBot extends ResWueBot {
     // Override
     public function replyToSender($message) {
         $this->sendMessage($message);
+    }
+
+    public function whereami() {
+        if ($this->isAdmin($this->payload->other_user->id)) {
+            $groups = array();
+            foreach ($this->getGroups() as $group) {
+                array_push($groups, $group->name);
+            }
+
+            sort($groups);
+
+            $message = "%s";
+            foreach ($groups as $group) {
+                $message = sprintf($message, sprintf("%s\n%s", $group, "%s"));
+            }
+
+            return sprintf($message, "");
+        }
+        else {
+            return "Sorry, you cannot use this command.";
+        }
     }
 }
