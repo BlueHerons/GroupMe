@@ -161,7 +161,7 @@ abstract class BaseBot {
      * @param int $user user ID
      */
     protected function addToBlacklist($user) {
-        $this->config->blacklist[] = $user;
+        $this->config->blacklist[] = (int) $user;
         $this->logger->info(sprintf("%s was added to the blacklist.", $user));
         $this->saveConfig();
     }
@@ -398,6 +398,7 @@ abstract class BaseBot {
      * @return mixed member object if found, or false
      */
     protected function searchMemberByName($partial_name) {
+        $partial_name = str_replace("@", "", $partial_name);
         // Exact Match search
         foreach ($this->getGroupMembers() as $member) {
             if (strtolower($member->nickname) === strtolower($partial_name)) {
