@@ -113,14 +113,13 @@ abstract class CommandBot extends EventBot {
     }
 
     protected function getCommand() {
-        $cmd = str_replace(self::COMMAND_CHAR, "", $this->getMessage());
-        $cmd = str_replace(self::COMMAND_CHAR, "", explode(" ", $cmd)[0]);
-        return $cmd;
+        $cmd = substr($this->getMessage(), strlen(self::COMMAND_CHAR));
+        return explode(" ", $cmd)[0];
     }
 
     protected function getParams() {
-        $params = str_replace(self::COMMAND_CHAR, "", $this->getMessage());
-        $params = str_replace($this->getCommand(), "", $params);
+        $params = substr($this->getMessage(), strlen(self::COMMAND_CHAR));
+        $params = substr($params, strlen($this->getCommand()));
         $params = array_values(array_filter(explode(" ", $params)));
         return $params;
     }
