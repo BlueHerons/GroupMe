@@ -348,6 +348,14 @@ abstract class BaseBot {
             "text" => $message));
     }
 
+    protected function getGroups() {
+        if (!isset($this->groups)) {
+            $this->groups = json_decode(utf8_encode($this->gm->groups->index(array("per_page" => 100))))->response;
+        }
+
+        return $this->groups;
+    }
+
     /**
      * Gets the GroupMe group ID that triggered the message
      */
