@@ -19,11 +19,14 @@ class PMBot extends ResWueBot {
         $this->unregisterCommand("help");
         $this->unregisterCommand("ignore");
         $this->unregisterCommand("info");
+        $this->unregisterCommand("lessons");
         $this->unregisterCommand("mods");
         $this->unregisterCommand("rules");
+        $this->unregisterCommand("spin");
 
         $this->registerCommand("announce",  array($this, "announce"),  "Announce something to a single chat");
         $this->registerCommand("broadcast", array($this, "broadcast"), "Broadcast a message to all chats");
+        $this->registerCommand("init",      array($this, "init"),      "Initialize the bot in a chat");
 
         $this->payload = $chat;
     }
@@ -59,6 +62,54 @@ class PMBot extends ResWueBot {
             $message = sprintf("** Broadcast from %s **\n\n%s", $this->payload->other_user->name, $message);
             $this->sendBroadcast($message);
             $this->replyToSender("Broadcast sent.");
+        }
+        else {
+            $this->replyToSender("Sorry, you cannot use this command.");
+        }
+    }
+
+    public function init() {
+        if ($this->isAdmin($this->payload->other_user->id)) {
+            $args = func_get_args();
+            $group_id = $args[1];
+            if (sizeof($args) < 2) {
+                return "usage:\n\n" . CommandBot::COMMAND_CHAR . "init <group_id>";
+            }
+            else {
+                $this->replyToSender(sprintf("Attempting to initialize in group %d...", $group_id));
+                if ($this->isInGroup($group_id)) {
+                    $info = $this->getGroupInfo($group_id);
+
+                    // Does bot already exist?
+                    $bots = json_decode($this->gm->bots->index())->response;
+
+                    foreach ($bots as $bot) {
+                        if ($bot->group_id == $group_id) {
+                            return sprintf("I am already initialized in %s", $info->name);
+                        }
+                    }
+
+                    // Create a actual GM bot
+                    $hash = md5(uniqid($info->name, true));
+                    $this->gm->bots->create(array(
+                        "name" => sprintf("Listener: %s", $info->name),
+                        "group_id" => $group_id,
+                        "avatar_url" => "http://i.groupme.com/453x500.png.e9543114323c4e17abb244998152273b",
+                        "callback_url" => sprintf($this->config->callback_url, $hash)
+                    ));
+
+                    // Add to config
+                    $this->initializeNewBot($hash, $info->name);
+
+                    // Send message to that group showing its online
+                    $this->sendGroupMessage("! info", $group_id);
+
+                    return sprintf("I have been successfully initialized in %s", $info->name);
+                }
+                else {
+                    return sprintf("I am not a member of group %s", $group_id);
+                }
+            }
         }
         else {
             $this->replyToSender("Sorry, you cannot use this command.");
