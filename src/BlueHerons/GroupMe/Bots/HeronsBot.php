@@ -80,11 +80,11 @@ class HeronsBot extends CommandBot {
 
     public function checkForAutoKick($data) {
         $this->logger->info(sprintf("Checking %s (%s) for auto-kick", $data['who']->nickname, $data['who']->user_id));
-        if (isset($this->config->autokick) && is_array($this->config->autokick)) {
-            if (in_array($data['who']->user_id, $this->gconfig->autokick)) {
-                $this->logger->info(sprintf("%s is marked for auto-kick", $data['who']->nickname));
-                $this->removeMember($data['who']->user_id);
-            }
+        if (in_array($data['who']->user_id, $this->getGlobalConfig("autokick")) ||
+            in_array($data['who']->user_id, $this->config->autokick)) {
+            $this->logger->info(sprintf("%s is marked for auto-kick", $data['who']->nickname));
+            $this->removeMember($data['who']->user_id);
+            $this->sendDirectMessage($data['by']->user_id, sprintf("%s was automatically kicked from that group. Please contact an admin for details.", $data['who']->nickname));
         }
     }
 
