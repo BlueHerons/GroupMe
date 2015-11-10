@@ -261,6 +261,17 @@ abstract class BaseBot {
     }
 
     /**
+     * Gets the previous message as an object
+     */
+    protected function getPreviousMessage() {
+        $id = $this->getPayload()['id'];
+        $message = json_decode(utf8_decode($this->gm->messages->index($this->getGroupID(), array(
+            "before_id" => $id,
+            "limit" => 1))))->response->messages[0];
+        return $message;
+    }
+
+    /**
      * Returns the entire payload that was sent by GroupMe
      *
      * @return object
