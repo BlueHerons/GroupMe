@@ -103,6 +103,7 @@ def findGroupFromID(group_id, group_class = groupy.Group):
 """Get the inactive members from member_status"""
 def getInactiveMembers(member_status):
     now = datetime.now()
+    LOG.info("Now is {0}".format(now))
     inactive = []
     
     for id in member_status.keys():
@@ -158,7 +159,7 @@ def updateMemberStatusFromPMs(member_status):
             if message_seen:
                 break
             
-            if messages[-1].created_at < status['message_sent']:
+            if messages[-1].created_at < datetime.fromtimestamp(status['message_sent']):
                 break
             
             messages = messages.older()
