@@ -12,6 +12,8 @@ abstract class BaseBot {
     const CONFIG_FILE = "config.json";
     const LOG_DIR = "logs";
 
+    private $global_config;
+
     protected $config;
     protected $logger;
     protected $gm;
@@ -39,14 +41,13 @@ abstract class BaseBot {
 
         if (file_exists(self::CONFIG_FILE)) {       
             $config = json_decode(file_get_contents(self::CONFIG_FILE));
-            $this->gconfig = $config;
+            $this->global_config = $config;
 
             if (isset($config->bots->{$bot_id})) {
                 $this->config = $config->bots->{$bot_id};
                 $this->config->autokick = is_array($this->config->autokick) ? 
                     $this->config->autokick :
                     array();
-                $this->config->autokick = array_unique(array_merge($this->config->autokick, $this->gconfig->autokick));
             }
             else {
                 $this->logger->debug("No configuration for " . $bot_id);
@@ -105,7 +106,7 @@ abstract class BaseBot {
         $id = is_numeric($user) ?
                 $user :
                 $this->searchMemberByName($user)->user_id;
-        return in_array($id, $this->gconfig->admin);
+        return in_array($id, $this->global_config->admin);
     }
 
     /**
@@ -202,11 +203,28 @@ abstract class BaseBot {
     }
 
     /**
+     * Returns a setting from global configuration
+     *
+     * @return mixed setting from global configuration
+     */
+    protected function getGlobalConfig($key = "") {
+        if (property_exists($this->global_config, $key)) {
+            return $this->global_config->{$key};
+        }
+        else {
+            $message = sprintf("Global configuration does not contain: %s", $key);
+            $this->logger->error($message, debug_backtrace());
+            $this->replyToSender(sprintf("ERROR: %s\n\n%s", $message));
+            die();
+        }
+    }
+
+    /**
      * Returns the configuration for this bot
      *
      * @return object
      */
-    protected function getConfig() {
+    protected function getConfig($key = "") {
         return $this->config;
     }
 
@@ -292,9 +310,9 @@ abstract class BaseBot {
             return;
         }
         foreach ($bots->response as $bot) {
-            if (isset($this->gconfig->bots->{$bot->bot_id}) &&
-                isset($this->gconfig->bots->{$bot->bot_id}->broadcast) &&
-                $this->gconfig->bots->{$bot->bot_id}->broadcast) {
+            if (isset($this->global_config->bots->{$bot->bot_id}) &&
+                isset($this->global_config->bots->{$bot->bot_id}->broadcast) &&
+                $this->global_config->bots->{$bot->bot_id}->broadcast) {
                 $this->sendGroupMessage($message, $bot->group_id);
                 $this->logger->info(sprintf("Broadcast sent to %s.", substr($bot->bot_id, 0, 6)));
             }
