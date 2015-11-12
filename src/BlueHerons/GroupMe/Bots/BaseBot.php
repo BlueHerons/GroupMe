@@ -103,10 +103,12 @@ abstract class BaseBot {
      * @return boolean
      */
     protected function isAdmin($user) {
-        $id = is_numeric($user) ?
-                $user :
-                $this->searchMemberByName($user)->user_id;
-        return in_array($id, $this->global_config->admin);
+        $user = is_numeric($user) ?
+                $this->getMemberByID($user) :
+                $this->searchMemberByName($user);
+        $admin = in_array($user->user_id, $this->getGlobalConfig("admin"));
+        $this->logger->debug(sprintf("%s (%s) %s an admin.", $user->nickname, $user->user_id, $admin ? "is" : "is not"));
+        return $admin;
     }
 
     /**
@@ -136,15 +138,12 @@ abstract class BaseBot {
      * @return boolean
      */
     protected function isMod($user) {
-        $id = is_numeric($user) ?
-                $user :
-                $this->searchMemberByName($user)->user_id;
-        if (sizeof($this->config->mods) == 0) {
-            return true;
-        }
-        else {
-            return in_array($id, $this->config->mods);
-        }
+        $user = is_numeric($user) ?
+                $this->getMemberByID($user) :
+                $this->searchMemberByName($user);
+        $mod = in_array($user->user_id, $this->config->mods);
+        $this->logger->debug(sprintf("%s (%s) %s a mod.", $user->nickname, $user->user_id, $admin ? "is" : "is not"));
+        return $mod;
     }
 
     /**
@@ -176,7 +175,7 @@ abstract class BaseBot {
      */
     protected function isAuthorized($user) {
         if (in_array($user, $this->config->blacklist) || in_array($user, $this->config->autokick)) {
-            $this->logger->info(sprintf("%s is blacklisted or marked for autokick.", $user));
+            $this->logger->info(sprintf("%s is not authorized: blacklisted or marked for autokick.", $user));
             return false;
         }
         return true;
