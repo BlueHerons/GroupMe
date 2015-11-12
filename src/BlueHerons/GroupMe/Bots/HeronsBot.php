@@ -15,7 +15,7 @@ class HeronsBot extends CommandBot {
         $this->registerHandler(EventBot::MEMBER_JOINED, array($this, "checkForAutoKick"));
         $this->registerHandler(EventBot::MEMBER_REJOINED, array($this, "checkForAutoKick"));
 
-        if ($this->config->modAddOnly) {
+        if (isset($this->config->modAddOnly) && $this->config->modAddOnly) {
             $this->registerHandler(EventBot::MEMBER_ADDED, array($this, "checkThatModeratorAddedMember"));
         }
 
