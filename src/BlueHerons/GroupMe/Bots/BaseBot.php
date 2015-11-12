@@ -173,9 +173,11 @@ abstract class BaseBot {
      *
      * @return boolean
      */
-    protected function isAuthorized($user) {
-        if (in_array($user, $this->config->blacklist) || in_array($user, $this->config->autokick)) {
-            $this->logger->info(sprintf("%s is not authorized: blacklisted or marked for autokick.", $user));
+    protected function isAuthorized($user_id) {
+        if (in_array($user_id, $this->config->blacklist) ||
+            in_array($user_id, $this->config->autokick) ||
+            in_array($user_id, $this->getGlobalConfig("autokick"))) {
+            $this->logger->info(sprintf("%s is not authorized: blacklisted or marked for autokick.", $user_id));
             return false;
         }
         return true;
