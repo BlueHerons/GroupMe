@@ -25,6 +25,7 @@ class HeronsBot extends CommandBot {
         $this->registerCommand("lessons",    array($this, "smurfling_lessons"), "Smurfling Lessons link");
         $this->registerCommand("spin",       array($this, "spin"),              "Spins all chat members, picking one");
         $this->registerCommand("mods",       array($this, "mods"),              "Chat mods");
+        $this->registerCommand("mu",         array($this, "mu"),                "Calculate average MU to win");
 
         // button should only be registered if configured
         if (isset($this->config->button)) {
@@ -166,6 +167,26 @@ class HeronsBot extends CommandBot {
         }
         $mods = sprintf($mods, "");
         return $mods;
+    }
+
+    public function mu() {
+        $score = $this->getParams();
+        if (sizeof($score) != 2) {
+            $this->replyToSender("bad");
+            return;
+        }
+        else {
+            $us = preg_replace("/k$/", "000", $score[0]);
+            $them = preg_replace("/k$/", "000", $score[1]);
+            $checkpointsLeft = ceil((Cycle::getNextCycleStart()->getTimestamp() - time()) / Cycle::CHECKPOINT_LENGTH);
+            
+            $ours = (Cycle::CHECKPOINTS_IN_CYCLE * $us) / (Cycle::CHECKPOINTS_IN_CYCLE - $checkpointsLeft);
+            $thiers = (Cycle::CHECKPOINTS_IN_CYCLE * $them) / (Cycle::CHECKPOINTS_IN_CYCLE - $checkpointsLeft);
+
+            $diff = $thiers - $ours;
+
+            return sprintf("An average gain of %s MU over the next %s checkpoints is needed to win.", ceil($diff / $checkpointsLeft), $checkpointsLeft);
+        }
     }
 
     public function next_checkpoint() {
