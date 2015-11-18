@@ -9,23 +9,23 @@ from datetime import timedelta
 import groupy
 import logging
 
-logging.getLogger().setLevel(logging.INFO)
+logging.getLogger().setLevel(logging.DEBUG)
 urllib3log = logging.getLogger('requests.packages.urllib3.connectionpool')
 urllib3log.setLevel(logging.ERROR)
 
 parser = argparse.ArgumentParser(
         description="Migrate all active users from group a to group b.")
-parser.add_argument('-f', '--from_group', 
+parser.add_argument('-f', '--from_group',
         type=str,
         required = True,
         help='The source group ID')
-parser.add_argument('-t', '--to_group', 
+parser.add_argument('-t', '--to_group',
         type=str,
         required = True,
         help='The destination group ID')
 parser.add_argument('-l', '--lookback_days',
-        default=31, 
-        type=int, 
+        default=31,
+        type=int,
         help='How many days back to look for member activity')
 parser.add_argument("--ya_rly",
         action='store_true',
@@ -69,8 +69,11 @@ active_members_by_id = {}
 max_msg_age = datetime.now() - timedelta(args.lookback_days)
 messages = oldgroup.messages()
 while True:
+    logging.debug("Reading messages starting at {0}...".format(messages[0].created_at))
     for msg in messages:
         if msg.created_at < max_msg_age:
+            logging.debug("Message {0} is older than {1}...".format(
+              msg.id, max_msg_age))
             break
 
         if msg.user_id in members_by_id:
@@ -81,8 +84,10 @@ while True:
                 active_members_by_id[user_id] = True
 
     if messages[-1].created_at < max_msg_age:
+        logging.debug("The last message in this batch is too old, we're done.")
         break
 
+    logging.debug("Getting older messages...")
     messages = messages.older()
 
 # Add the active members to the new group and remove them from the old
@@ -90,10 +95,14 @@ logging.info("Migrating group members...")
 for id in active_members_by_id.keys():
     
     if args.ya_rly:
-        logging.info('Moving {0}'.format(members_by_id[id].nickname))        
-        newgroup.add(members_by_id[id])
-        oldgroup.remove(members_by_id[id])
+        logging.info('Moving {0}'.format(members_by_id[id].nickname))
+        if newgroup.add(members_by_id[id]):
+            logging.info("Added to {0}".format(newgroup.name))
+            # TODO: Don't uncomment this until I have implemented a way to ensure I
+            # don't move the account I'm using to do moves.
+            # if oldgroup.remove(members_by_id[id]):
+            #     logging.info("Removed from {0}".format(oldgroup.name))
     else:
-        logging.info('Would move {0}'.format(members_by_id[id].nickname))  
+        logging.info('Would move {0}'.format(members_by_id[id].nickname))
         
 
