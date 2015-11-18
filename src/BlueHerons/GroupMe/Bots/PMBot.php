@@ -123,6 +123,19 @@ class PMBot extends ResWueBot {
     }
 
     // Override
+    public function getMemberByID($id) {
+        if ($id != $this->payload->other_user->id) {
+            throw new \Exception(sprintf("Attempted to get third-party user %s from PM", $id));
+        }
+        else {
+            $other = new \stdClass();
+            $other->user_id = $this->payload->other_user->id;
+            $other->nickname = $this->payload->other_user->name;
+            return $other;
+        }
+    }
+
+    // Override
     public function listen() {
         if ($this->isAuthorized($this->payload->other_user->id)) {
             if ($this->isCommandMessage()) {
