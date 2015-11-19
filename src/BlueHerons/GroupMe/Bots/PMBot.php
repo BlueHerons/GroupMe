@@ -177,14 +177,14 @@ class PMBot extends ResWueBot {
         if ($this->isAdmin($this->payload->other_user->id)) {
             $groups = array();
             foreach ($this->getGroups() as $group) {
-                array_push($groups, $group->name);
+                array_push($groups, $group);
             }
 
             sort($groups);
 
             $message = "%s";
             foreach ($groups as $group) {
-                $message = sprintf($message, sprintf("%s\n%s", $group, "%s"));
+                $message = sprintf($message, sprintf("%d - %s\n%s", $group->id, $group->name, "%s"));
             }
 
             return sprintf($message, "");
