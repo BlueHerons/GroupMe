@@ -24,6 +24,7 @@ class PMBot extends ResWueBot {
         $this->unregisterCommand("rules");
         $this->unregisterCommand("spin");
 
+        $this->registerCommand("addmeto",      array($this, "addto"),      "Add to a group");
         $this->registerCommand("announce",     array($this, "announce"),   "Announce something to a single chat");
         $this->registerCommand("broadcast",    array($this, "broadcast"),  "Broadcast a message to all chats");
         $this->registerCommand("init",         array($this, "init"),       "Initialize the bot in a chat");
@@ -31,6 +32,23 @@ class PMBot extends ResWueBot {
         $this->registerCommand("whereami",     array($this, "whereami"),   "Lists groups the bot is in");
 
         $this->payload = $chat;
+    }
+
+    public function addto() {
+        if ($this->isAdmin($this->payload->other_user->id)) {
+            $group_id = $this->getParams()[0];
+            $this->logger->info(sprintf("%s (%s) requested add to %s",
+                $this->payload->other_user->name,
+                $this->payload->other_user->id,
+                $group_id));
+            $this->temp_group_id = $group_id;
+            $this->addMember($this->payload->other_user->id,
+                             $this->payload->other_user->name);
+            $this->replyToSender("You were added to " . $this->getGroupInfo()->name);
+        }
+        else {
+            $this->replyToSender("Sorry, you cannot use this command.");
+        }
     }
 
     public function announce() {

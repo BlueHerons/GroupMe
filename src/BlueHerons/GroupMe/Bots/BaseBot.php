@@ -606,5 +606,16 @@ abstract class BaseBot {
             }
         }   
     }
+
+    protected function addMember($user_id, $nickname) {
+        $response = json_decode(utf8_decode($this->gm->members->add($this->getGroupID(), array("members" => array(
+            array(
+                "nickname" => $nickname,
+                "user_id" => $user_id
+            )
+        )))))->response;
+
+        $this->logger->info(sprintf("Add request %s for %s to %s was sent.", $response->results_id, $user_id, $this->getGroupID()));
+    }
 }
 ?>
