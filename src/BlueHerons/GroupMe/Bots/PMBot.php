@@ -24,10 +24,11 @@ class PMBot extends ResWueBot {
         $this->unregisterCommand("rules");
         $this->unregisterCommand("spin");
 
-        $this->registerCommand("announce",  array($this, "announce"),  "Announce something to a single chat");
-        $this->registerCommand("broadcast", array($this, "broadcast"), "Broadcast a message to all chats");
-        $this->registerCommand("init",      array($this, "init"),      "Initialize the bot in a chat");
-        $this->registerCommand("whereami",  array($this, "whereami"),  "Lists groups the bot is in");
+        $this->registerCommand("announce",     array($this, "announce"),   "Announce something to a single chat");
+        $this->registerCommand("broadcast",    array($this, "broadcast"),  "Broadcast a message to all chats");
+        $this->registerCommand("init",         array($this, "init"),       "Initialize the bot in a chat");
+        $this->registerCommand("removemefrom", array($this, "removefrom"), "Remove from a group");
+        $this->registerCommand("whereami",     array($this, "whereami"),   "Lists groups the bot is in");
 
         $this->payload = $chat;
     }
@@ -118,6 +119,11 @@ class PMBot extends ResWueBot {
     }
 
     // Override
+    public function getGroupID() {
+        return $this->temp_group_id;
+    }
+
+    // Override
     public function getMessage() {
         return $this->payload->last_message->text;
     }
@@ -166,6 +172,23 @@ class PMBot extends ResWueBot {
             "text" => $message
         ));
         sleep(1);
+    }
+
+    public function removefrom() {
+        $args = $this->getParams();
+        if (sizeof($args) < 1) {
+            return "usage:\n\n" . CommandBot::COMMAND_CHAR . "removemefrom <group_id>";
+        }
+        else {
+            $group_id = $args[0];
+            $this->logger->info(sprintf("%s (%s) requested removal from %s",
+                $this->payload->other_user->name,
+                $this->payload->other_user->id,
+                $group_id));
+            $this->temp_group_id = $group_id;
+            $this->removeMember($this->payload->other_user->id);
+            return sprintf("You have been removed from %s", $this->getGroupInfo($group_id)->name);
+        }
     }
 
     // Override
