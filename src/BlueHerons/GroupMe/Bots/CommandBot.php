@@ -7,9 +7,9 @@ abstract class CommandBot extends EventBot {
 
     public function __construct($token, $bot_id) {
         parent::__construct($token, $bot_id);
+        $this->registerCommand("ack",    array($this, "acknowledgeUser"), "Acknowledge the specified user");
         $this->registerCommand("help",   array($this, "listCommands"),    "Show available commands");
         $this->registerCommand("ignore", array($this, "ignoreUser"),      "Ignore the specified user");
-        $this->registerCommand("ack",    array($this, "acknowledgeUser"), "Acknowledge the specified user");
         $this->registerCommand("info",   array($this, "info"),            "Show info");
     }
 
@@ -35,7 +35,10 @@ abstract class CommandBot extends EventBot {
     protected function info() {
         $commitsh = substr(`git rev-parse HEAD`, 0, 8);
         $bot = array_pop(explode("\\", $this->config->bot));
-        $message  = sprintf("Group..... : %s (ID: %s)\n", $this->getGroupInfo()->name, $this->getGroupInfo()->group_id);
+        $message  = sprintf("%s\n", $this->getGroupInfo()->name);
+        $message .= sprintf("%s\n", $this->getGroupInfo()->description);
+        $message .= sprintf("%s\n", $this->padding(strlen($this->getGroupInfo()->name), "-"));
+        $message .= sprintf("Group ID.. : %s\n", $this->getGroupInfo()->group_id);
         $message .= sprintf("Bot....... : %s (%s)\n", $bot, $commitsh);
         $message .= sprintf("Capacity.. : %s / %s\n", sizeof($this->getGroupInfo()->members), $this->getGroupInfo()->max_members);
         $message .= sprintf("Created On : %s\n", date("Y-m-d", $this->getGroupInfo()->created_at));
