@@ -617,5 +617,14 @@ abstract class BaseBot {
 
         $this->logger->info(sprintf("Add request %s for %s to %s was sent.", $response->results_id, $user_id, $this->getGroupID()));
     }
+
+    protected function padding($length, $char = ".") {
+        $pad = "";
+        while ($length > 0) {
+            $pad .= $char;
+            $length--;
+        }
+        return $pad;
+    }
 }
 ?>
