@@ -78,6 +78,7 @@ class PMBot extends ResWueBot {
 
     public function broadcast() {
         if ($this->isAdmin($this->payload->other_user->id)) {
+            $this->replyToSender("Sending broadcast...");
             $message= implode(" ", array_slice(func_get_args(), 1));
             $message = sprintf("** Broadcast from %s **\n\n%s", $this->payload->other_user->name, $message);
             $this->sendBroadcast($message);
@@ -123,6 +124,8 @@ class PMBot extends ResWueBot {
 
                     // Send message to that group showing its online
                     $this->sendGroupMessage("! info", $group_id);
+                    sleep(2);
+                    $this->sendGroupMessage("! help", $group_id);
 
                     return sprintf("I have been successfully initialized in %s", $info->name);
                 }
@@ -173,7 +176,7 @@ class PMBot extends ResWueBot {
                 }
             }
             else {
-                $this->sendMessage("This is a bot account. Private messages are not monitored. Please join the Puget Sound Resistance Reception Room @ http://blueheronsresistance.com/chat");
+                $this->sendMessage("I am ARCC - Automated Resistance Command Construct. My direct messages are not monitored. Please join the Puget Sound Resistance Reception Room @ http://blueheronsresistance.com/chat");
             }
         }
         else {

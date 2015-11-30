@@ -310,15 +310,18 @@ abstract class BaseBot {
             $this->logger->error(sprintf("Error getting bots from GM API: %s", print_r($bots->meta, true)));
             return;
         }
-        foreach ($bots->response as $bot) {
-            if (isset($this->global_config->bots->{$bot->bot_id}) &&
-                isset($this->global_config->bots->{$bot->bot_id}->broadcast) &&
-                $this->global_config->bots->{$bot->bot_id}->broadcast) {
-                $this->sendGroupMessage($message, $bot->group_id);
-                $this->logger->info(sprintf("Broadcast sent to %s.", substr($bot->bot_id, 0, 6)));
+        foreach ($this->global_config->bots as $bot_id => $bot) {
+            if (!isset($bot->broadcast) || !$bot->broadcast) {
+                $this->logger->info(sprintf("%s (%s) not configured for broadcast", $bot->group, substr($bot_id, 0, 6)));
+                continue;
             }
-            else {
-                $this->logger->info(sprintf("%s not configured for broadcast", substr($bot->bot_id, 0, 6)));
+
+            foreach ($bots->response as $gm_bot) {
+                if (strpos($gm_bot->callback_url, $bot_id)) {
+                    $group_id = $gm_bot->group_id;
+                    $this->sendGroupMessage($message, $group_id);
+                    $this->logger->info(sprintf("Broadcast sent to %s (%s).", $group_id, substr($bot_id, 0, 6)));
+                }
             }
         }
     }
