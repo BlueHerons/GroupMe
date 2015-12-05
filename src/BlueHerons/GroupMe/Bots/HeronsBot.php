@@ -172,7 +172,7 @@ class HeronsBot extends CommandBot {
     public function mu() {
         $score = $this->getParams();
         if (sizeof($score) != 2) {
-            $this->replyToSender("bad");
+            $this->replyToSender(sprintf("usage:\n\n%smu <our score> <thier score>", CommandBot::COMMAND_CHAR));
             return;
         }
         else {
