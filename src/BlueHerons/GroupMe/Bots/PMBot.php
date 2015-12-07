@@ -90,8 +90,19 @@ class PMBot extends ResWueBot {
         $this->setGlobalConfig("autokick", $autokick);
 
         // Kick from all rooms
-
-        return print_r($this->getParams(), true);
+        $groups = json_decode(utf8_encode($this->gm->groups->index(array("per_page" => 100))))->response;
+        foreach($groups as $group) {
+            $this->logger->debug(sprintf("[autokick] Checking for %s's membership in %s", $user_id, $group->name));
+            foreach ($group->members as $member) {
+                if ($user_id == $member->user_id) {
+                    $message = sprintf("%s was removed from %s", $user_id, $group->name);
+                    $this->gm->members->remove($group->id, $user_id);
+                    $this->logger->info(sprintf("[autokick] %s", $message));
+                    $this->replyToSender($message);
+                }
+            }
+        }
+        return sprintf("%s was added to auto-kick list", $user_id);
     }
 
     public function broadcast() {
