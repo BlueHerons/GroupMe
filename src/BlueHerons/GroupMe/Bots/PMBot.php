@@ -26,6 +26,7 @@ class PMBot extends ResWueBot {
 
         $this->registerCommand("addmeto",      array($this, "addto"),      "Add to a group");
         $this->registerCommand("announce",     array($this, "announce"),   "Announce something to a single chat");
+        $this->registerCommand("autokick",     array($this, "autokick"),   "Adds user to global autokick");
         $this->registerCommand("broadcast",    array($this, "broadcast"),  "Broadcast a message to all chats");
         $this->registerCommand("init",         array($this, "init"),       "Initialize the bot in a chat");
         $this->registerCommand("removemefrom", array($this, "removefrom"), "Remove from a group");
@@ -74,6 +75,23 @@ class PMBot extends ResWueBot {
             }
             return sprintf("I am not a member of group %s", $group_id);
         }
+    }
+
+    public function autokick() {
+        $user_id = $this->getParams()[0];
+        if (!is_numeric($user_id)) { return "Please provide a user_id"; }
+
+        $autokick = array_merge(
+            ((array) $this->getGlobalConfig("autokick")),
+            array((int) $user_id));
+
+        sort($autokick);
+
+        $this->setGlobalConfig("autokick", $autokick);
+
+        // Kick from all rooms
+
+        return print_r($this->getParams(), true);
     }
 
     public function broadcast() {

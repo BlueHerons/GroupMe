@@ -214,7 +214,7 @@ abstract class BaseBot {
         }
         else {
             $message = sprintf("Global configuration does not contain: %s", $key);
-            $this->logger->error($message, debug_backtrace());
+            $this->logger->error($message);
             $this->replyToSender(sprintf("ERROR: %s\n\n%s", $message));
             die();
         }
@@ -250,9 +250,32 @@ abstract class BaseBot {
      */
     protected function saveConfig() {
         $c = json_decode(file_get_contents(self::CONFIG_FILE));
+        $c = (object) array_merge((array) $c, (array) $this->global_config);
         $c->bots->{$this->bot_id} = $this->config;
         file_put_contents(self::CONFIG_FILE, json_encode($c, JSON_PRETTY_PRINT));
         $this->logger->debug("Config saved");
+    }
+
+    /**
+     * Sets a global configuration value. Global config values are applied to all
+     * bots on the platform.
+     *
+     * @param string $key the setting's key
+     * @param string $value the settings value
+     */
+    protected function setGlobalConfig($key, $value) {
+        if (property_exists($this->global_config, $key)) {
+            $this->global_config->{$key} = $value;
+            $this->saveConfig();
+        }
+        else {
+            $message = sprintf("Global configuration does not contain: %s", $key);
+            $this->replyToSender(sprintf("ERROR: %s\n\n%s", $message));
+            die();
+        }
+
+        $this->logger->error(print_r($this->global_config));
+
     }
 
     /**

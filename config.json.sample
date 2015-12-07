@@ -2,6 +2,9 @@
     "admin": [
         "user_ids of bot admins"
     ],
+    "autokick": [
+        "user_ids to auto-kick from rooms"
+    ]
     "token": "GroupMe API Token",
     "log": "warn",
     "bots": {
