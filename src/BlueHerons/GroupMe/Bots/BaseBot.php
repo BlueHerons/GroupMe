@@ -273,9 +273,6 @@ abstract class BaseBot {
             $this->replyToSender(sprintf("ERROR: %s\n\n%s", $message));
             die();
         }
-
-        $this->logger->error(print_r($this->global_config));
-
     }
 
     /**
