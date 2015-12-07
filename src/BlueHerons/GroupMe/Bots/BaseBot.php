@@ -23,6 +23,19 @@ abstract class BaseBot {
     private $payload;
     private $group;
 
+    protected $DRINK_EMOJI_MAP = array(
+        "popping_bottle" => array(1, 51),
+        "brown_bottle"   => array(1, 52),
+        "beer"           => array(2, 56),
+        "margarita"      => array(2, 70),
+        "pina_colada"    => array(2, 71),
+        "coconut_drink"  => array(2, 74),
+        "lemonade"       => array(2, 75),
+        "beer_pong"      => array(3, 74),
+        "keg"            => array(3, 75),
+        "shot_glass"     => array(3, 76)
+    );
+
     public function __construct($token, $bot_id) {
         $this->BOGUS_GROUPME_USER = json_decode('{"nickname": "Bogus User", "user_id": -1}');
 
@@ -373,7 +386,7 @@ abstract class BaseBot {
         $result = $this->gm->messages->create($group_id, array(
             md5(time() . uniqid()),
             $msg,
-            $this->getMentions($msg)
+            $this->getAttachments($msg)
         ));
         $this->logger->debug(print_r($result, true));
     }
@@ -529,6 +542,11 @@ abstract class BaseBot {
 
 
         return $this->BOGUS_GROUPME_USER;
+    }
+
+    protected function getAttachments($message) {
+        // TODO: Handle all attachment types
+        return $this->getMentions($message);
     }
 
     /**
