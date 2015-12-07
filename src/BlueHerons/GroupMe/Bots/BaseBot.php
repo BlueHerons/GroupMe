@@ -332,7 +332,7 @@ abstract class BaseBot {
         }
         foreach ($this->global_config->bots as $bot_id => $bot) {
             if (!isset($bot->broadcast) || !$bot->broadcast) {
-                $this->logger->info(sprintf("%s (%s) not configured for broadcast", $bot->group, substr($bot_id, 0, 6)));
+                $this->logger->info(sprintf("%s (%s) not configured for broadcast", $bot->group->name, substr($bot_id, 0, 6)));
                 continue;
             }
 
