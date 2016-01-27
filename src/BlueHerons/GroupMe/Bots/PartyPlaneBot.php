@@ -12,6 +12,8 @@ class PartyPlaneBot extends HeronsBot {
         parent::unregisterCommand("lessons");
 
         parent::registerHandler(EventBot::MEMBER_ADDED, array($this, "onMemberAdded"));
+
+        parent::registerHandler(EventBot::OFFICE_MODE_CHANGED, array($this, "onOfficeModeChanged"));
     }
 
     public function onMemberAdded($data) {
@@ -27,6 +29,13 @@ class PartyPlaneBot extends HeronsBot {
         $messages = explode("{BREAK}", $rules);
         foreach ($messages as $message) {
             $this->sendMessage($message);
+        }
+    }
+
+    public function onOfficeModeChanged($data) {
+        if ($data['what'] != "disabled") {
+            $this->sendMessage(sprintf("@%s, I'm pretty sure you didn't mean to do that.", $data['who']->nickname));
+            $this->enableNotifications(false);
         }
     }
 
